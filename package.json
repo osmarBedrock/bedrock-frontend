@@ -41,7 +41,7 @@
     "@mui/system": "6.1.4",
     "@mui/utils": "6.1.4",
     "@mui/x-date-pickers": "7.21.0",
-    "@phosphor-icons/react": "2.1.7",
+    "@phosphor-icons/react": "^2.1.7",
     "@react-pdf/renderer": "4.0.0",
     "@supabase/supabase-js": "2.45.6",
     "@testing-library/dom": "10.4.0",
