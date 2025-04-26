@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Grid2 from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Helmet } from 'react-helmet-async';
@@ -81,8 +81,8 @@ export function Page(): React.JSX.Element {
             </div>
           </Stack>
 
-          <Grid2 container spacing={4}>
-            <Grid2 item xs={12}>
+          <Grid container spacing={4}>
+            <Grid item xs={12}>
               <Summary
                 metric={metric}
                 setParams={setParams}
@@ -99,9 +99,9 @@ export function Page(): React.JSX.Element {
                   loader={loaderData}
                 />
               </Summary>
-            </Grid2>
+            </Grid>
 
-            <Grid2 item xs={12}>
+            <Grid item xs={12}>
               <PerformanceChartCard
                 hasErrors={hasErrors}
                 loader={loaderPerformanceMetrics}
@@ -113,8 +113,8 @@ export function Page(): React.JSX.Element {
                   { chart: generalMetrics, needComplement: false },
                 ]}
               />
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </Stack>
       </Box>
     </React.Fragment>

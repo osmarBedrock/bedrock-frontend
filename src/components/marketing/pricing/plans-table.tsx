@@ -39,11 +39,11 @@ export function PlansTable(): React.JSX.Element {
                 <Plan
                   action={<Button variant="outlined">Select</Button>}
                   currency="USD"
-                  description="To familiarize yourself with our tools."
-                  features={['Create contracts', 'Chat support', 'Email alerts']}
-                  id="startup"
-                  name="Startup"
-                  price={0}
+                  description="For Small Business Owners & Beginners."
+                  features={['Simple Analytics Dashboard (Traffic, Leads, Conversions)', 'On-Page SEO Audit & Basic Keyword Tracking', 'Website speed (one time, con refresh)', 'AI Chatbot (Limited Conversations) - per day limit responses', 'Lead Capture & Basic CRM (Up to 500 Contacts) Limite de 500 contactos', 'Google Search Console & GA4 Integration', ' No Plugins Needed – Easy Setup', 'Email Support']}
+                  id="Essentials-plan"
+                  name="Essentials Plan"
+                  price={29}
                 />
               </Grid>
               <Grid
@@ -53,14 +53,14 @@ export function PlansTable(): React.JSX.Element {
                 }}
               >
                 <Plan
-                  action={<Button variant="contained">Start free trial</Button>}
+                  action={<Button variant="contained">Select</Button>}
                   currency="USD"
-                  description="Best for small teams with up to 10 members."
-                  features={['All previous', 'Highlights reporting', 'Data history', 'Unlimited users']}
-                  id="standard"
-                  name="Standard"
+                  description="For Growing Businesses & eCommerce Stores"
+                  features={['Everything in Essentials +', 'Full SEO Toolkit (Keyword Tracking, Competitor Analysis, Backlink Monitoring)', 'CRM with Lead Nurturing (Up to 5,000 Contacts)', 'AI Chatbot (Limited Conversations)', 'Social Media & Google My Business Integration', 'Automated Lead Follow-Ups', 'Chat Support']}
+                  id="Pro-plan"
+                  name="Pro Plan"
                   popular
-                  price={14.99}
+                  price={89}
                 />
               </Grid>
               <Grid
@@ -72,21 +72,22 @@ export function PlansTable(): React.JSX.Element {
                 <Plan
                   action={
                     <Button color="secondary" variant="contained">
-                      Contact us
+                      Select
                     </Button>
                   }
                   currency="USD"
-                  description="For larger teams managing multiple projects."
+                  description="For Agencies & Power Users."
                   features={[
-                    'All previous',
-                    'Unlimited contacts',
-                    'Analytics platform',
-                    'Public API access',
-                    'Send and sign unlimited contracts',
+                    'Everything in Pro +',
+                    'Multi-Site Management for WordPress (Track Multiple Websites) working…',
+                    'AI-Powered Predictive Analytics & Lead Scoring - future feature ',
+                    'CRM with Workflow Automation (Up to 10,000 Contacts)',
+                    'AI Chatbot (Unlimited Conversations)',
+                    'Dedicated Account Manager / Email / Chat Support',
                   ]}
-                  id="business"
-                  name="Business"
-                  price={29.99}
+                  id="elite-plan"
+                  name="Elite Plan"
+                  price={149}
                 />
               </Grid>
             </Grid>

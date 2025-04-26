@@ -76,6 +76,7 @@ export function AuthGuard({ children }: Readonly<AuthGuardProps>): React.JSX.Ele
 
   if (error) {
     return <Alert color="error">{error}</Alert>;
+    
   }
 
   return <React.Fragment>{children}</React.Fragment>;
