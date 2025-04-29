@@ -128,9 +128,6 @@ export function AccountDetails({user, updateFunction}: AccountProps): React.JSX.
                 >
                   <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                     <CameraIcon fontSize="var(--icon-fontSize-md)" />
-                    <Typography color="inherit" variant="subtitle2">
-                      Select
-                    </Typography>
                   </Stack>
                   <input
                     type="file"
