@@ -40,13 +40,14 @@ const schema = zod.object({
   firstName: zod.string().min(1, { message: 'First name is required' }),
   lastName: zod.string().min(1, { message: 'Last name is required' }),
   email: zod.string().min(1, { message: 'Email is required' }).email(),
+  domain: zod.string().min(1, { message: 'Enterprise domain is required' }),
   password: zod.string().min(6, { message: 'Password should be at least 6 characters' }),
   terms: zod.boolean().refine((value) => value, 'You must accept the terms and conditions'),
 });
 
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { firstName: '', lastName: '', email: '', password: '', terms: false } satisfies Values;
+const defaultValues = { firstName: '', lastName: '', email: '', domain: '', password: '', terms: false } satisfies Values;
 
 export function SignUpForm(): React.JSX.Element {
   const { checkSession } = useUser();
@@ -153,6 +154,17 @@ export function SignUpForm(): React.JSX.Element {
                   <InputLabel>Last name</InputLabel>
                   <OutlinedInput {...field} />
                   {errors.lastName ? <FormHelperText>{errors.lastName.message}</FormHelperText> : null}
+                </FormControl>
+              )}
+            />
+            <Controller
+              control={control}
+              name="domain"
+              render={({ field }) => (
+                <FormControl error={Boolean(errors.domain)}>
+                  <InputLabel>Enterprise domain</InputLabel>
+                  <OutlinedInput {...field} type="email" />
+                  {errors.domain ? <FormHelperText>{errors.domain.message}</FormHelperText> : null}
                 </FormControl>
               )}
             />
