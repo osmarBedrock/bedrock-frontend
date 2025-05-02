@@ -40,6 +40,7 @@ const schema = zod.object({
   firstName: zod.string().min(1, { message: 'First name is required' }),
   lastName: zod.string().min(1, { message: 'Last name is required' }),
   email: zod.string().min(1, { message: 'Email is required' }).email(),
+  enterpriseName: zod.string().min(1, { message: 'Enterprise name is required' }),
   domain: zod.string().min(1, { message: 'Enterprise domain is required' }),
   password: zod.string().min(6, { message: 'Password should be at least 6 characters' }),
   terms: zod.boolean().refine((value) => value, 'You must accept the terms and conditions'),
@@ -51,6 +52,7 @@ const defaultValues = {
   firstName: '',
   lastName: '',
   email: '',
+  enterpriseName: '',
   domain: '',
   password: '',
   terms: false,
@@ -165,11 +167,22 @@ export function SignUpForm(): React.JSX.Element {
             />
             <Controller
               control={control}
+              name="enterpriseName"
+              render={({ field }) => (
+                <FormControl error={Boolean(errors.enterpriseName)}>
+                  <InputLabel>Enterprise name</InputLabel>
+                  <OutlinedInput {...field} />
+                  {errors.enterpriseName ? <FormHelperText>{errors.enterpriseName.message}</FormHelperText> : null}
+                </FormControl>
+              )}
+            />
+            <Controller
+              control={control}
               name="domain"
               render={({ field }) => (
                 <FormControl error={Boolean(errors.domain)}>
                   <InputLabel>Enterprise domain</InputLabel>
-                  <OutlinedInput {...field} type="email" />
+                  <OutlinedInput {...field} />
                   {errors.domain ? <FormHelperText>{errors.domain.message}</FormHelperText> : null}
                 </FormControl>
               )}

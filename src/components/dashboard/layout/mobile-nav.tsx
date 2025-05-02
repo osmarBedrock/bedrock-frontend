@@ -19,11 +19,18 @@ import { Logo } from '@/components/core/logo';
 
 import { icons } from './nav-icons';
 import { WorkspacesSwitch } from './workspaces-switch';
+import Button from '@mui/material/Button';
 
 export interface MobileNavProps {
   onClose?: () => void;
   open?: boolean;
   items?: NavItemConfig[];
+}
+
+const provider = {
+  id: 'google',
+  name: 'Google',
+  logo: '/assets/logo-google.svg',
 }
 
 export function MobileNav({ items = [], open, onClose }: MobileNavProps): React.JSX.Element {
@@ -75,6 +82,18 @@ export function MobileNav({ items = [], open, onClose }: MobileNavProps): React.
         <WorkspacesSwitch />
       </Stack>
       <Box component="nav" sx={{ flex: '1 1 auto', p: 2 }}>
+
+      <Button
+                  color="secondary"
+                  endIcon={<Box alt="" component="img" height={24} src={provider.logo} width={24} />}
+                  key={provider.id}
+                  onClick={(): void => {
+                    console.log('click');
+                  }}
+                  variant="outlined"
+                >
+                  Continue with {provider.name}
+                </Button>
         {renderNavGroups({ items, onClose, pathname })}
       </Box>
     </Drawer>

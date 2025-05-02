@@ -15,7 +15,7 @@ export const AuthService = {
             throw error?.response?.data;
         }
     },
-    
+
     handleAuthCallback: async (code: string): Promise<any> => {
         try {
             const response = await axios.post(`${API_URL}/google/callback`, { code });
@@ -28,17 +28,17 @@ export const AuthService = {
 
     handleSignUpForm: async (payload: any): Promise <any> => {
         try {
-            const response = await axios.post(`${API_URL}/client/signup`, payload);
+            const response = await axios.post(`${API_URL}/user/signup`, payload);
             return response.data;
         } catch (error: any) {
             console.error('Error to connect with google services:', error);
             throw error?.response?.data;
         }
     },
-    
+
     handleSignIn: async (payload: any): Promise <any> => {
         try {
-            const response = await axios.post(`${API_URL}/client/signin`, payload);
+            const response = await axios.post(`${API_URL}/user/signin`, payload);
             return response.data;
         } catch (error: any) {
             console.error('Error in the signin:', error);

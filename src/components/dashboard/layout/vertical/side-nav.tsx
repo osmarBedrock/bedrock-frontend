@@ -29,7 +29,11 @@ const logoColors = {
   dark: { blend_in: 'light', discrete: 'light', evident: 'light' },
   light: { blend_in: 'dark', discrete: 'dark', evident: 'light' },
 } as Record<ColorScheme, Record<NavColor, 'dark' | 'light'>>;
-
+const provider = {
+  id: 'google',
+  name: 'Google',
+  logo: '/assets/logo-google.svg',
+}
 export interface SideNavProps {
   color?: NavColor;
   items?: NavItemConfig[];
@@ -78,6 +82,19 @@ export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.
           '&::-webkit-scrollbar': { display: 'none' },
         }}
       >
+        <Stack component="li" key="google-access" spacing={1.5}>
+          <Button
+              color="secondary"
+              endIcon={<Box alt="" component="img" height={24} src={provider.logo} width={24} />}
+              key={provider.id}
+              onClick={(): void => {
+                console.log('click');
+              }}
+              variant="outlined"
+            >
+              Grant access to {provider.name}
+            </Button>
+        </Stack>
         {renderNavGroups({ items, pathname })}
       </Box>
     </Box>

@@ -1,7 +1,6 @@
 'use client';
 
-import axios from 'axios';
-import type { Range } from '@/types/analytics';
+import api from './api';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8081/api';
 
@@ -56,13 +55,13 @@ const executeRequest = async <T>(endpoint: string, params: any): Promise<T> => {
     params.googleToken = params.googleToken || JSON.parse(localStorage.getItem('refresh-token') || 'null');
 
     // 4. Crear y almacenar la promesa de la solicitud
-    const requestPromise = axios.post(url, params)
+    const requestPromise = api.post(url, params)
       .then(response => {
         // Almacenar en caché solo si la respuesta es exitosa
         if (response.status >= 200 && response.status < 300) {
-          cache.responses.set(key, { 
-            data: response.data, 
-            timestamp: Date.now() 
+          cache.responses.set(key, {
+            data: response.data,
+            timestamp: Date.now()
           });
         }
         return response.data;
@@ -74,7 +73,7 @@ const executeRequest = async <T>(endpoint: string, params: any): Promise<T> => {
 
     // Registrar la solicitud pendiente
     cache.pending.set(key, requestPromise);
-    
+
     console.log('[API Request]', url, 'Key:', key);
     return await requestPromise;
   } catch (error) {
@@ -85,13 +84,13 @@ const executeRequest = async <T>(endpoint: string, params: any): Promise<T> => {
 };
 
 export const AnalyticsService = {
-  handleAnalyticsRequest: (params: AnalyticsRequest) => 
+  handleAnalyticsRequest: (params: AnalyticsRequest) =>
     executeRequest('google/analytics', params),
 
-  handleSearchConsoleRequest: (params: SearchConsoleRequest) => 
+  handleSearchConsoleRequest: (params: SearchConsoleRequest) =>
     executeRequest('google/searchConsole', params),
 
-  handlePageSpeedInsightsRequest: (params: PageSpeedInsightRequest) => 
+  handlePageSpeedInsightsRequest: (params: PageSpeedInsightRequest) =>
     executeRequest('google/pageSpeed', params),
 
   // Herramientas para desarrollo
