@@ -13,6 +13,17 @@ export interface LayoutConfig {
 export const layoutConfig = {
   navItems: [
     {
+      key: 'google-access',
+      items: [
+        {
+          key: 'google-access',
+          title: 'Otorgar permisos de Google',
+          href: paths.dashboard.crypto,
+          icon: 'currency-eth',
+        },
+      ],
+    },
+    {
       key: 'dashboards',
       title: 'Dashboards',
       items: [

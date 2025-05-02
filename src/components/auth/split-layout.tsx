@@ -14,15 +14,23 @@ export function SplitLayout({ children }: SplitLayoutProps): React.JSX.Element {
         sx={{
           alignItems: 'center',
           justifyContent: 'center',
-          bgcolor: 'var(--mui-palette-background-level1)',
+          bgcolor: 'var(--mui-palette-neutral-950)',
           display: { xs: 'none', lg: 'flex' },
           flexDirection: 'column',
+          color: '#fff',
           p: 3,
         }}
       >
         <Stack spacing={4} sx={{ maxWidth: '700px' }}>
-          <Stack spacing={1}>
-            <Typography variant="h4">Welcome to Devias Kit PRO</Typography>
+          <Stack spacing={6}>
+                <Stack direction="column" alignItems="center">
+          <img 
+            src="/assets/LogoVantageWP.png"
+            alt="VantageWP Logo" 
+            style={{ width: '320px' }}
+          />
+        </Stack>
+            <Typography variant="h4">Welcome to VantageWP</Typography>
             <Typography color="text.secondary">
               A professional template that comes with ready-to-use MUI components developed with one common goal in
               mind, help you build faster & beautiful applications.

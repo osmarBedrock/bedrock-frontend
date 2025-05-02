@@ -21,6 +21,10 @@ import { icons } from '../nav-icons';
 import { WorkspacesSwitch } from '../workspaces-switch';
 import { navColorStyles } from './styles';
 
+import { SxProps, Theme } from '@mui/material/styles';
+
+import Button from '@mui/material/Button';
+
 const logoColors = {
   dark: { blend_in: 'light', discrete: 'light', evident: 'light' },
   light: { blend_in: 'dark', discrete: 'dark', evident: 'light' },
@@ -142,6 +146,9 @@ interface NavItemProps extends Omit<NavItemConfig, 'items'> {
   depth: number;
   forceOpen?: boolean;
   pathname: string;
+  buttonVariant?: 'text' | 'outlined' | 'contained'; // Tipos de botón de MUI
+  buttonColor?: 'primary' | 'secondary' | 'error' | 'inherit'; // Colores de MUI
+  sx?: SxProps<Theme>; // Estilos personalizados
 }
 
 function NavItem({
@@ -156,6 +163,9 @@ function NavItem({
   matcher,
   pathname,
   title,
+  buttonVariant,
+  buttonColor,
+  sx,
 }: NavItemProps): React.JSX.Element {
   const [open, setOpen] = React.useState<boolean>(forceOpen);
   const active = isNavItemActive({ disabled, external, href, matcher, pathname });
@@ -163,6 +173,33 @@ function NavItem({
   const ExpandIcon = open ? CaretDownIcon : CaretRightIcon;
   const isBranch = children && !href;
   const showChildren = Boolean(children && open);
+
+  if (buttonVariant) {
+    return (
+      <Button
+        fullWidth
+        variant={buttonVariant}
+        color={buttonColor}
+        startIcon={Icon ? <Icon fontSize="var(--icon-fontSize-md)" /> : null}
+        disabled={disabled}
+        href={href}
+        sx={{
+          justifyContent: 'flex-start',
+          textTransform: 'none',
+          py: 1,
+          px: 2,
+          ...sx,
+          ...(active && {
+            bgcolor: 'var(--NavItem-active-background)',
+            color: 'var(--NavItem-active-color)',
+          }),
+        }}
+      >
+        {title}
+        {label ? <Chip label={label} size="small" sx={{ ml: 1 }} /> : null}
+      </Button>
+    );
+  }
 
   return (
     <Box component="li" data-depth={depth} sx={{ userSelect: 'none' }}>

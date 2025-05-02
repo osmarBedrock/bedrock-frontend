@@ -47,7 +47,14 @@ const schema = zod.object({
 
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { firstName: '', lastName: '', email: '', domain: '', password: '', terms: false } satisfies Values;
+const defaultValues = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  domain: '',
+  password: '',
+  terms: false,
+} satisfies Values;
 
 export function SignUpForm(): React.JSX.Element {
   const { checkSession } = useUser();
@@ -75,7 +82,6 @@ export function SignUpForm(): React.JSX.Element {
     window.location.href = url ?? '';
 
     setIsPending(false);
-
   }, []);
 
   const onSubmit = React.useCallback(
