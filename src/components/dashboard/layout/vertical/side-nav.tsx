@@ -1,8 +1,9 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
-import { useColorScheme } from '@mui/material/styles';
+import { SxProps, Theme, useColorScheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { ArrowSquareOut as ArrowSquareOutIcon } from '@phosphor-icons/react/dist/ssr/ArrowSquareOut';
 import { CaretDown as CaretDownIcon } from '@phosphor-icons/react/dist/ssr/CaretDown';
@@ -20,10 +21,7 @@ import type { ColorScheme } from '@/styles/theme/types';
 import { icons } from '../nav-icons';
 import { WorkspacesSwitch } from '../workspaces-switch';
 import { navColorStyles } from './styles';
-
-import { SxProps, Theme } from '@mui/material/styles';
-
-import Button from '@mui/material/Button';
+import { spacing } from '@mui/system';
 
 const logoColors = {
   dark: { blend_in: 'light', discrete: 'light', evident: 'light' },
@@ -33,7 +31,7 @@ const provider = {
   id: 'google',
   name: 'Google',
   logo: '/assets/logo-google.svg',
-}
+};
 export interface SideNavProps {
   color?: NavColor;
   items?: NavItemConfig[];
@@ -83,17 +81,34 @@ export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.
         }}
       >
         <Stack component="li" key="google-access" spacing={1.5}>
-          <Button
-              color="secondary"
-              endIcon={<Box alt="" component="img" height={24} src={provider.logo} width={24} />}
-              key={provider.id}
-              onClick={(): void => {
-                console.log('click');
-              }}
-              variant="outlined"
-            >
-              Grant access to {provider.name}
-            </Button>
+<Button
+  color="secondary"
+  endIcon={<Box alt="" component="img" height={24} src={provider.logo} width={24}/>}
+  key={provider.id}
+  onClick={(): void => {
+    console.log('click');
+  }}
+  variant="outlined"
+  sx={{
+    backgroundColor: 'var(--mui-palette-neutral-800)',
+    borderColor: 'var(--mui-palette-neutral-900)',
+    color: 'var(--NavItem-active-color)',
+    fontWeight: 500,
+    textTransform: 'none',
+    borderRadius: '6px',
+    padding: '8px 16px',
+    marginBottom: '10px',
+    '&:hover': {
+      backgroundColor: 'var(--mui-palette-neutral-950)',
+      borderColor: 'var(--mui-palette-neutral-800)',
+    },
+    '& .MuiButton-endIcon': {
+      marginLeft: '10px',
+    },
+  }}
+>
+  Grant access to {provider.name}
+</Button>
         </Stack>
         {renderNavGroups({ items, pathname })}
       </Box>

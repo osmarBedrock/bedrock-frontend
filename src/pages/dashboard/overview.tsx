@@ -57,7 +57,7 @@ export function Page(): React.JSX.Element {
         fetchAnalyticsData();
         fetchSearchConsoleData();
       }, [])
-      console.log('performanceMetrics', performanceMetrics)
+      // console.log('performanceMetrics', performanceMetrics)
   return (
     <React.Fragment>
       <Helmet>

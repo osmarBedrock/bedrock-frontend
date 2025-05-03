@@ -204,7 +204,6 @@ export function aggregateSeoData(rows: SearchQueryResponseData["rows"]) {
 }
 export function getDateLabelForSEO(dateString: string) {
   const label = formatInTimeZone(dateString, "America/Denver", "do MMM");
-  console.log('label', label)
   return label;
 }
 

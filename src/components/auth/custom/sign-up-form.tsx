@@ -24,6 +24,11 @@ import { useUser } from '@/hooks/use-user';
 import { RouterLink } from '@/components/core/link';
 import { DynamicLogo } from '@/components/core/logo';
 import { toast } from '@/components/core/toaster';
+import { useAccountStatus } from "@/hooks/useAccountStatus";
+
+
+const { setStatus } = useAccountStatus();
+
 
 interface OAuthProvider {
   id: 'google' | 'discord';
@@ -89,18 +94,34 @@ export function SignUpForm(): React.JSX.Element {
   const onSubmit = React.useCallback(
     async (values: Values): Promise<void> => {
       setIsPending(true);
-
-      const { error } = await authClient.signUp(values);
-
-      if (error) {
-        setError('root', { type: 'server', message: error.message });
+      try {
+        // 1. Marcar como pendiente al iniciar
+        setStatus("pending");
+  
+        const { error } = await authClient.signUp(values);
+  
+        if (error) {
+          // 2. Si hay error, volver a inactive
+          setStatus("inactive");
+          setError('root', { type: 'server', message: error.message });
+          return;
+        }
+  
+        // 3. Si es exitoso, marcar como active
+        setStatus("active");
+        await checkSession?.();
+  
+        // Opcional: Redirigir después de registro exitoso
+        // window.location.href = paths.dashboard;
+  
+      } catch (err) {
+        setStatus("inactive");
+        setError('root', { type: 'server', message: 'An unexpected error occurred' });
+      } finally {
         setIsPending(false);
-        return;
       }
-
-      await checkSession?.();
     },
-    [checkSession, setError]
+    [checkSession, setError, setStatus] // Añade setStatus a las dependencias
   );
 
   return (
@@ -227,9 +248,24 @@ export function SignUpForm(): React.JSX.Element {
               )}
             />
             {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
-            <Button disabled={isPending} type="submit" variant="contained">
-              Create account
+            <Button 
+              disabled={isPending} 
+              type="submit" 
+              variant="contained"
+              sx={{
+                bgcolor: isPending ? 'grey.500' : 'primary.main',
+                '&:hover': {
+                  bgcolor: isPending ? 'grey.500' : 'primary.dark'
+                }
+              }}
+              >
+              {isPending ? 'Creating account...' : 'Create account'}
             </Button>
+            {status === "pending" && (
+              <Alert severity="info" sx={{ mt: 2 }}>
+                Your account is being created. You'll be redirected shortly.
+              </Alert>
+            )}
           </Stack>
         </form>
       </Stack>
