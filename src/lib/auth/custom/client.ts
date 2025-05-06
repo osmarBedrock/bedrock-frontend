@@ -38,13 +38,13 @@ export interface ResetPasswordParams {
 }
 
 export class AuthClient {
-  
+
   async signUp(client: SignUpParams): Promise<{ error?: any }> {
     try {
-      const { token, user } = await AuthService.handleSignUpForm(client);
+      const { token, user, website } = await AuthService.handleSignUpForm(client);
       localStorage.setItem('custom-auth-token', token);
-      localStorage.setItem('custom-auth-user', JSON.stringify(user));
-      return {};      
+      localStorage.setItem('custom-auth-user', JSON.stringify({...user, website }));
+      return {};
     } catch (error: any) {
       return { error };
     }
@@ -61,11 +61,13 @@ export class AuthClient {
 
   async handleTokenFormGoogle(code: string): Promise<{ token?: string, error?: any, user?: any }> {
     try {
-      const { token, user, refreshToken } = await AuthService.handleAuthCallback(code);
-      const { data } = await AuthService.handleDataUser({email:user.email});
-      localStorage.setItem('custom-auth-token', token);
-      localStorage.setItem('refresh-token', JSON.stringify(refreshToken));
-      localStorage.setItem('custom-auth-user', JSON.stringify({...user, ...data}));
+      const { user, updatedWebsite, integration, verificationData, website } = await AuthService.handleAuthCallback(code);
+      localStorage.setItem('custom-auth-token', JSON.stringify({ token: {
+        accessToken: integration.accessToken,
+        refreshToken: integration.refreshToken,
+        expiresAt: integration.expiresAt
+      }}));
+      localStorage.setItem('custom-auth-user', JSON.stringify({...user, updatedWebsite, verificationData, website}));
       return {  };
     } catch (error) {
       return { error };

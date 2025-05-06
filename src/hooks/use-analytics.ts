@@ -36,9 +36,8 @@ export const useAnalytics = (setRange: any, params: URLSearchParams, range: Rang
   const [ generalMetrics, setGeneralMetrics ] = useState<any[]>([]);
 
   const fetchAnalyticsData = async () => {
-    const viewId = "413032710";
     const isRealTime = true;
-    const _range = (params.get("range") ?? "week") as Range; 
+    const _range = (params.get("range") ?? "week") as Range;
     setRange(_range);
     setLoaderData(true);
     setLoaderSessionData(true);
@@ -47,24 +46,20 @@ export const useAnalytics = (setRange: any, params: URLSearchParams, range: Rang
       const results = await Promise.allSettled([
         getAnalytics({
           range,
-          viewId,
           metric: ["activeUsers", "sessions", "bounceRate", "averageSessionDuration"],
         }),
         getAnalytics({
           range,
           isRealTime,
-          viewId,
           metric: ["activeUsers"],
         }),
         getAnalytics({
           range,
-          viewId,
           metric: ["activeUsers"],
           dimensions: ["country"],
           keepEmptyRows: true,
         }),
         getAnalytics({
-          viewId,
           range,
           dimensions:["sessionDefaultChannelGroup"],
           metric:["sessions"],
@@ -111,8 +106,7 @@ export const useAnalytics = (setRange: any, params: URLSearchParams, range: Rang
     }
   };
   const fetchSearchConsoleData = async () => {
-    const siteUrl = "https://4uroofingtx.com/";
-    const _range = (params.get("range") ?? "week") as Range; 
+    const _range = (params.get("range") ?? "week") as Range;
     setRange(_range);
     setLoaderDataForTable(true);
 
@@ -121,12 +115,10 @@ export const useAnalytics = (setRange: any, params: URLSearchParams, range: Rang
         getSearchConsole({
           range,
           rowLimit:90,
-          siteUrl,
         }),
         getSearchConsole({
           range,
           rowLimit:50,
-          siteUrl,
         })
       ]);
       if (chartDataResult.status === "fulfilled" && chartDataResult?.value) {
@@ -146,7 +138,7 @@ export const useAnalytics = (setRange: any, params: URLSearchParams, range: Rang
       }
 
       if(queriesDataResult.status === "fulfilled"&& queriesDataResult?.value){
-        
+
       }
     }catch(error){
       console.log('error', error)
@@ -212,7 +204,6 @@ export const useAnalytics = (setRange: any, params: URLSearchParams, range: Rang
           "name": "SEO"
       }
   }
-    const siteUrl = "https://prestigesurgery.com/";
     setLoaderPerformanceMetrics(true);
     setHasErrors(false);
     try {
@@ -235,7 +226,7 @@ export const useAnalytics = (setRange: any, params: URLSearchParams, range: Rang
 
   const refreshDataSearchConsole = () => {
     setLoaderDataForTable(true);
-    const _metric = (params.get("metric") ?? "impressions") as Metric; 
+    const _metric = (params.get("metric") ?? "impressions") as Metric;
     setMetric(_metric);
     if(dataChart) {
       const _data = customDataForSEO(dataChart, _metric);
@@ -248,8 +239,8 @@ export const useAnalytics = (setRange: any, params: URLSearchParams, range: Rang
   }
   const refreshData = () => {
     setLoaderData(true);
-    const _metric = (params.get("metric") ?? "activeUsers") as Metric; 
-    const _range = (params.get("range") ?? "week") as Range; 
+    const _metric = (params.get("metric") ?? "activeUsers") as Metric;
+    const _range = (params.get("range") ?? "week") as Range;
     setMetric(_metric);
     if(chartData?.rows) {
       const customData = makeDataForChart(chartData, _metric,_range);

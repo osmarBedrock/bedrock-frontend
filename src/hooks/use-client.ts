@@ -1,24 +1,10 @@
 import { useState } from 'react';
 
+import type { User } from '@/types/user';
 import { AuthService } from '@/lib/auth/services/auth';
 
-export interface UserData {
-  id?: string;
-  name?: string;
-  email?: string;
-  avatarUrl?: string;
-  clientId?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  scope?: string;
-  password?: string;
-  firstName?: string;
-  lastName?: string;
-  isLoginGoogle?: boolean;
-}
-
 export const useClient = () => {
-  const [user, setUser] = useState<UserData>(JSON.parse(localStorage.getItem('custom-auth-user') || ''));
+  const [user, setUser] = useState<User>(JSON.parse(localStorage.getItem('custom-auth-user') || ''));
 
   const fetchUserData = async (email: string) => {
     try {
@@ -29,12 +15,12 @@ export const useClient = () => {
     }
   };
 
-  const updateUser = async (user: UserData) => {
+  const updateUser = async (userUpdated: User) => {
     try {
-      const { data } = await AuthService.handleUpdateDataUser(user);
+      const { data } = await AuthService.handleUpdateDataUser(userUpdated);
       const oldUser = JSON.parse(localStorage.getItem('custom-auth-user') || '');
-      setUser({ ...oldUser, ...data });
-      setUser(data);
+      setUser({ ...oldUser, ...data.user, website: data.website });
+      localStorage.setItem('custom-auth-user', JSON.stringify(user));
     } catch (error) {
       console.log('error', error);
     }
@@ -44,5 +30,6 @@ export const useClient = () => {
     fetchUserData,
     updateUser,
     user,
+    setUser
   };
 };

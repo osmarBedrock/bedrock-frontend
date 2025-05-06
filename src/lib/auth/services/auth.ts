@@ -1,14 +1,14 @@
 'use client';
 
-import { UserData } from '@/hooks/use-client';
 import axios from 'axios';
+import type { User } from '@/types/user';
 
 const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8081/api';
 
 export const AuthService = {
     googleAuthRedirect: async () => {
         try {
-            const response = await axios.get(`${API_URL}/google/auth`);
+            const response = await axios.get(`${API_URL}/user/google/auth`);
             return response.data;
         } catch (error: any) {
             console.error('Error al obtener la URL de Google Auth:', error);
@@ -18,7 +18,7 @@ export const AuthService = {
 
     handleAuthCallback: async (code: string): Promise<any> => {
         try {
-            const response = await axios.post(`${API_URL}/google/callback`, { code });
+            const response = await axios.get(`${API_URL}/user/google/callback`, { params: { code } });
             return response.data; // Token back por el backend
         } catch (error: any) {
             console.error('Error to get the url from google callback:', error);
@@ -56,9 +56,9 @@ export const AuthService = {
         }
     },
 
-    handleUpdateDataUser: async (user: UserData): Promise <any> => {
+    handleUpdateDataUser: async (user: User): Promise <any> => {
         try {
-            const response = await axios.patch(`${API_URL}/user/${user?.id}`, {...user, id: user?.id} );
+            const response = await axios.patch(`${API_URL}/user/profile/${user?.id}`, {...user, id: user?.id} );
             return response;
         } catch (error: any) {
             console.error('Error in the signin:', error);

@@ -9,6 +9,8 @@ import { useSettings } from '@/hooks/use-settings';
 import { layoutConfig } from '../config';
 import { MainNav } from './main-nav';
 import { SideNav } from './side-nav';
+import { useUser } from '@/hooks/use-user';
+import type { NavItemConfig } from '@/types/nav';
 
 export interface VerticalLayoutProps {
   children?: React.ReactNode;
@@ -16,6 +18,17 @@ export interface VerticalLayoutProps {
 
 export function VerticalLayout({ children }: VerticalLayoutProps): React.JSX.Element {
   const { settings } = useSettings();
+  const { user } = useUser();
+  const [navItems, setNavItems] = React.useState<NavItemConfig[]>([]);
+
+  React.useEffect(() => {
+    if (user) {
+      setNavItems(layoutConfig.navItems.map((item) => ({
+        ...item,
+        disabled: !user?.website?.domain,
+      })));
+    }
+  }, [user]);
 
   return (
     <React.Fragment>
@@ -40,9 +53,9 @@ export function VerticalLayout({ children }: VerticalLayoutProps): React.JSX.Ele
           minHeight: '100%',
         }}
       >
-        <SideNav color={settings.navColor} items={layoutConfig.navItems} />
+        <SideNav color={settings.navColor} items={navItems} />
         <Box sx={{ display: 'flex', flex: '1 1 auto', flexDirection: 'column', pl: { lg: 'var(--SideNav-width)' } }}>
-          <MainNav items={layoutConfig.navItems} />
+          <MainNav items={navItems} />
           <Box
             component="main"
             sx={{

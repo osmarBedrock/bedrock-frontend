@@ -27,9 +27,6 @@ import { toast } from '@/components/core/toaster';
 import { useAccountStatus } from "@/hooks/useAccountStatus";
 
 
-const { setStatus } = useAccountStatus();
-
-
 interface OAuthProvider {
   id: 'google' | 'discord';
   name: string;
@@ -65,6 +62,7 @@ const defaultValues = {
 
 export function SignUpForm(): React.JSX.Element {
   const { checkSession } = useUser();
+  const { setStatus } = useAccountStatus();
 
   const [isPending, setIsPending] = React.useState<boolean>(false);
 
@@ -97,23 +95,23 @@ export function SignUpForm(): React.JSX.Element {
       try {
         // 1. Marcar como pendiente al iniciar
         setStatus("pending");
-  
+
         const { error } = await authClient.signUp(values);
-  
+
         if (error) {
           // 2. Si hay error, volver a inactive
           setStatus("inactive");
           setError('root', { type: 'server', message: error.message });
           return;
         }
-  
+
         // 3. Si es exitoso, marcar como active
         setStatus("active");
         await checkSession?.();
-  
+
         // Opcional: Redirigir después de registro exitoso
         // window.location.href = paths.dashboard;
-  
+
       } catch (err) {
         setStatus("inactive");
         setError('root', { type: 'server', message: 'An unexpected error occurred' });
@@ -248,9 +246,9 @@ export function SignUpForm(): React.JSX.Element {
               )}
             />
             {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
-            <Button 
-              disabled={isPending} 
-              type="submit" 
+            <Button
+              disabled={isPending}
+              type="submit"
               variant="contained"
               sx={{
                 bgcolor: isPending ? 'grey.500' : 'primary.main',

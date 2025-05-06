@@ -16,7 +16,7 @@ import { isNavItemActive } from '@/lib/is-nav-item-active';
 import { usePathname } from '@/hooks/use-pathname';
 import { RouterLink } from '@/components/core/link';
 import { Logo } from '@/components/core/logo';
-
+import { useUser } from '@/hooks/use-user';
 import { icons } from './nav-icons';
 import { WorkspacesSwitch } from './workspaces-switch';
 import Button from '@mui/material/Button';
@@ -35,6 +35,7 @@ const provider = {
 
 export function MobileNav({ items = [], open, onClose }: MobileNavProps): React.JSX.Element {
   const pathname = usePathname();
+  const { user } = useUser();
 
   return (
     <Drawer
@@ -83,7 +84,7 @@ export function MobileNav({ items = [], open, onClose }: MobileNavProps): React.
       </Stack>
       <Box component="nav" sx={{ flex: '1 1 auto', p: 2 }}>
 
-      <Button
+      {user?.website?.googleAccessToken && <Button
                   color="secondary"
                   endIcon={<Box alt="" component="img" height={24} src={provider.logo} width={24} />}
                   key={provider.id}
@@ -92,8 +93,8 @@ export function MobileNav({ items = [], open, onClose }: MobileNavProps): React.
                   }}
                   variant="outlined"
                 >
-                  Continue with {provider.name}
-                </Button>
+                  Grant access to {provider.name}
+                </Button>}
         {renderNavGroups({ items, onClose, pathname })}
       </Box>
     </Drawer>
@@ -189,7 +190,9 @@ function NavItem({
   pathname,
   title,
 }: NavItemProps): React.JSX.Element {
+  const { user } = useUser();
   const [open, setOpen] = React.useState<boolean>(forceOpen);
+  const [isDisabled, setIsDisabled] = React.useState<boolean>(href && !user?.website?.googleAccessToken ? true : false);
   const active = isNavItemActive({ disabled, external, href, matcher, pathname });
   const Icon = icon ? icons[icon] : null;
   const ExpandIcon = open ? CaretDownIcon : CaretRightIcon;
@@ -212,7 +215,7 @@ function NavItem({
               role: 'button',
             }
           : {
-              ...(href
+              ...(isDisabled
                 ? {
                     component: external ? 'a' : RouterLink,
                     href,
@@ -236,7 +239,7 @@ function NavItem({
           position: 'relative',
           textDecoration: 'none',
           whiteSpace: 'nowrap',
-          ...(disabled && {
+          ...(!isDisabled && {
             bgcolor: 'var(--NavItem-disabled-background)',
             color: 'var(--NavItem-disabled-color)',
             cursor: 'not-allowed',
@@ -258,7 +261,7 @@ function NavItem({
           }),
           ...(open && { color: 'var(--NavItem-open-color)' }),
           '&:hover': {
-            ...(!disabled &&
+            ...(isDisabled &&
               !active && { bgcolor: 'var(--NavItem-hover-background)', color: 'var(--NavItem-hover-color)' }),
           },
         }}

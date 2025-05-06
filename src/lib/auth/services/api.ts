@@ -1,4 +1,5 @@
 // api.ts (archivo separado para configuración de Axios)
+import { User } from '@/types/user';
 import axios from 'axios';
 
 const API_URL: string = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -17,11 +18,10 @@ api.interceptors.request.use(
     // Solo ejecutar en el lado cliente (Next.js compatibilidad)
     if (typeof window !== 'undefined') {
       try {
-        const userData = localStorage.getItem('custom-auth-user');
+        const userData: User = JSON.parse(localStorage.getItem('custom-auth-user') || '');
         if (userData) {
-          const { id } = JSON.parse(userData) as { id: string };
-          if (id && config.headers) {
-            config.headers['userId'] = id;
+          if (userData.id && config.headers) {
+            config.headers['userId'] = userData.id;
           }
         }
       } catch (error) {

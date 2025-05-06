@@ -16,9 +16,9 @@ export const layoutConfig = {
       key: 'dashboards',
       title: 'Dashboards',
       items: [
-        { key: 'overview', title: 'Overview', href: paths.dashboard.overview, icon: 'house' },
-        { key: 'analytics', title: 'Analytics', href: paths.dashboard.analytics, icon: 'chart-pie' },
-        { key: 'ecommerce', title: 'SEO', href: paths.dashboard.eCommerce, icon: 'launch' },
+        { key: 'overview', title: 'Overview', href: paths.dashboard.overview, icon: 'house', disabled: true },
+        { key: 'analytics', title: 'Analytics', href: paths.dashboard.analytics, icon: 'chart-pie', disabled: true },
+        { key: 'ecommerce', title: 'SEO', href: paths.dashboard.eCommerce, icon: 'launch', disabled: true },
         // { key: 'crypto', title: 'Crypto', href: paths.dashboard.crypto, icon: 'currency-eth' },
       ],
     },

@@ -17,11 +17,13 @@ import { usePathname } from '@/hooks/use-pathname';
 import { RouterLink } from '@/components/core/link';
 import { Logo } from '@/components/core/logo';
 import type { ColorScheme } from '@/styles/theme/types';
+import { toast } from '@/components/core/toaster';
 
 import { icons } from '../nav-icons';
 import { WorkspacesSwitch } from '../workspaces-switch';
 import { navColorStyles } from './styles';
-import { spacing } from '@mui/system';
+import { authClient } from '@/lib/auth/custom/client';
+import { useUser } from '@/hooks/use-user';
 
 const logoColors = {
   dark: { blend_in: 'light', discrete: 'light', evident: 'light' },
@@ -39,11 +41,28 @@ export interface SideNavProps {
 
 export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.JSX.Element {
   const pathname = usePathname();
+  const { user } = useUser();
 
   const { colorScheme = 'light' } = useColorScheme();
 
   const styles = navColorStyles[colorScheme][color];
   const logoColor = logoColors[colorScheme][color];
+
+  const handleGoogleAuth = async (): Promise<void> => {
+    try {
+      const { url, error } = await authClient.signInWithOAuth({ provider: 'google' });
+
+      if (error) {
+        toast.error(error);
+        return;
+      }
+
+      window.location.href = url ?? '';
+
+    } catch (error) {
+      console.error('Error al iniciar sesión con Google:', error);
+    }
+  };
 
   return (
     <Box
@@ -81,34 +100,35 @@ export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.
         }}
       >
         <Stack component="li" key="google-access" spacing={1.5}>
-<Button
-  color="secondary"
-  endIcon={<Box alt="" component="img" height={24} src={provider.logo} width={24}/>}
-  key={provider.id}
-  onClick={(): void => {
-    console.log('click');
-  }}
-  variant="outlined"
-  sx={{
-    backgroundColor: 'var(--mui-palette-neutral-800)',
-    borderColor: 'var(--mui-palette-neutral-900)',
-    color: 'var(--NavItem-active-color)',
-    fontWeight: 500,
-    textTransform: 'none',
-    borderRadius: '6px',
-    padding: '8px 16px',
-    marginBottom: '10px',
-    '&:hover': {
-      backgroundColor: 'var(--mui-palette-neutral-950)',
-      borderColor: 'var(--mui-palette-neutral-800)',
-    },
-    '& .MuiButton-endIcon': {
-      marginLeft: '10px',
-    },
-  }}
->
-  Grant access to {provider.name}
-</Button>
+        {
+          user?.website?.googleAccessToken &&
+            <Button
+            color="secondary"
+            endIcon={<Box alt="" component="img" height={24} src={provider.logo} width={24}/>}
+            key={provider.id}
+            onClick={handleGoogleAuth}
+            variant="outlined"
+            sx={{
+              backgroundColor: 'var(--mui-palette-neutral-800)',
+              borderColor: 'var(--mui-palette-neutral-900)',
+              color: 'var(--NavItem-active-color)',
+              fontWeight: 500,
+              textTransform: 'none',
+              borderRadius: '6px',
+              padding: '8px 16px',
+              marginBottom: '10px',
+              '&:hover': {
+                backgroundColor: 'var(--mui-palette-neutral-950)',
+                borderColor: 'var(--mui-palette-neutral-800)',
+              },
+              '& .MuiButton-endIcon': {
+                marginLeft: '10px',
+              },
+            }}
+          >
+            Grant access to {provider.name}
+          </Button>
+        }
         </Stack>
         {renderNavGroups({ items, pathname })}
       </Box>
@@ -205,6 +225,8 @@ function NavItem({
   const ExpandIcon = open ? CaretDownIcon : CaretRightIcon;
   const isBranch = children && !href;
   const showChildren = Boolean(children && open);
+  const { user } = useUser();
+  const [isDisabled, setIsDisabled] = React.useState<boolean>(href && !user?.website?.googleAccessToken ? true : false);
 
   if (buttonVariant) {
     return (
@@ -249,7 +271,7 @@ function NavItem({
               role: 'button',
             }
           : {
-              ...(href
+              ...(isDisabled
                 ? {
                     component: external ? 'a' : RouterLink,
                     href,
@@ -270,7 +292,7 @@ function NavItem({
           position: 'relative',
           textDecoration: 'none',
           whiteSpace: 'nowrap',
-          ...(disabled && {
+          ...(!isDisabled && {
             bgcolor: 'var(--NavItem-disabled-background)',
             color: 'var(--NavItem-disabled-color)',
             cursor: 'not-allowed',
@@ -292,9 +314,10 @@ function NavItem({
           }),
           ...(open && { color: 'var(--NavItem-open-color)' }),
           '&:hover': {
-            ...(!disabled &&
+            ...(isDisabled &&
               !active && { bgcolor: 'var(--NavItem-hover-background)', color: 'var(--NavItem-hover-color)' }),
           },
+          disabled: isDisabled,
         }}
         tabIndex={0}
       >

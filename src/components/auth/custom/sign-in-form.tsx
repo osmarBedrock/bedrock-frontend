@@ -48,10 +48,10 @@ const defaultValues = { email: '', password: '' } satisfies Values;
 
 export function SignInForm(): React.JSX.Element {
   const { checkSession } = useUser();
-  
+
   const [searchParams] = useSearchParams();
 
-  const [ code, setCode ] = React.useState<any>(null);
+  const [ code, setCode ] = React.useState<string | null>(null);
 
   const [showPassword, setShowPassword] = React.useState<boolean>();
 
@@ -227,7 +227,7 @@ export function SignInForm(): React.JSX.Element {
           </div>
         </Stack>
       </Stack>
-      {/* <Alert color="warning"> 
+      {/* <Alert color="warning">
         Use{' '}
         <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
           sofia@devias.io

@@ -64,8 +64,8 @@ export function AuthGuard({ children }: Readonly<AuthGuardProps>): React.JSX.Ele
           [AuthStrategy.FIREBASE]: paths.auth.firebase.signIn,
           [AuthStrategy.SUPABASE]: paths.auth.supabase.signIn,
         };
-        navigate(signInPaths[config.auth.strategy] || paths.auth.custom.signIn, { 
-          replace: true 
+        navigate(signInPaths[config.auth.strategy] || paths.auth.custom.signIn, {
+          replace: true
         });
         return;
       }
@@ -80,7 +80,7 @@ export function AuthGuard({ children }: Readonly<AuthGuardProps>): React.JSX.Ele
   React.useEffect(() => {
     checkPermissions();
   }, [checkPermissions]);
-  
+
   if (isChecking || isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>

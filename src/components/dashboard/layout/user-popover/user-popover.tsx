@@ -8,11 +8,9 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import MenuItem from '@mui/material/MenuItem';
 import Popover from '@mui/material/Popover';
 import Typography from '@mui/material/Typography';
-import { CreditCard as CreditCardIcon } from '@phosphor-icons/react/dist/ssr/CreditCard';
 import { LockKey as LockKeyIcon } from '@phosphor-icons/react/dist/ssr/LockKey';
 import { User as UserIcon } from '@phosphor-icons/react/dist/ssr/User';
 
-import type { User } from '@/types/user';
 import { config } from '@/config';
 import { paths } from '@/paths';
 import { AuthStrategy } from '@/lib/auth/strategy';
@@ -23,13 +21,13 @@ import { CognitoSignOut } from './cognito-sign-out';
 import { CustomSignOut } from './custom-sign-out';
 import { FirebaseSignOut } from './firebase-sign-out';
 import { SupabaseSignOut } from './supabase-sign-out';
-import { UserData } from '@/hooks/use-client';
+import { User } from '@/types/user';
 
 export interface UserPopoverProps {
   anchorEl: null | Element;
   onClose?: () => void;
   open: boolean;
-  user: UserData;
+  user: User;
 }
 
 export function UserPopover({ anchorEl, onClose, open, user }: UserPopoverProps): React.JSX.Element {
@@ -43,7 +41,7 @@ export function UserPopover({ anchorEl, onClose, open, user }: UserPopoverProps)
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
     >
       <Box sx={{ p: 2 }}>
-        <Typography>{user.name}</Typography>
+        <Typography>{user.firstName}</Typography>
         <Typography color="text.secondary" variant="body2">
           {user.email}
         </Typography>

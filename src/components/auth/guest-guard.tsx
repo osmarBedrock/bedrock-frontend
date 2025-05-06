@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import Alert from '@mui/material/Alert';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 import { paths } from '@/paths';
 import { logger } from '@/lib/default-logger';
@@ -16,7 +16,7 @@ export function GuestGuard({ children }: GuestGuardProps): React.JSX.Element | n
   const navigate = useNavigate();
   const { user, error, isLoading } = useUser();
   const [isChecking, setIsChecking] = React.useState<boolean>(true);
-
+  const [searchParams] = useSearchParams();
   const checkPermissions = async (): Promise<void> => {
     if (isLoading) {
       return;
@@ -27,9 +27,18 @@ export function GuestGuard({ children }: GuestGuardProps): React.JSX.Element | n
       return;
     }
 
-    if (user) {
-      logger.debug('[GuestGuard]: User is logged in, redirecting to dashboard');
+    if(user?.website?.domain){
+      logger.debug('[GuestGuard]: User is logged in, redirecting to dashboard 1');
       navigate(paths.dashboard.overview, { replace: true });
+      return;
+    }
+
+    if (user) {
+      logger.debug('[GuestGuard]: User is logged in, redirecting to dashboard 2');
+      navigate({
+        pathname: paths.dashboard.settings.account,
+        search: `?code=${(searchParams.get('code') ?? '')}` // Agrega el parámetro solo si existe
+      }, { replace: true });
       return;
     }
 
