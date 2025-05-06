@@ -32,20 +32,20 @@ const navItems = [
       { key: 'security', title: 'Security', href: paths.dashboard.settings.security, icon: 'lock-key' },
     ],
   },
-  // {
-  //   key: 'organization',
-  //   title: 'Organization',
-  //   items: [
-  //     { key: 'billing', title: 'Billing & plans', href: paths.dashboard.settings.billing, icon: 'credit-card' },
-  //     { key: 'team', title: 'Team', href: paths.dashboard.settings.team, icon: 'users-three' },
-  //     {
-  //       key: 'integrations',
-  //       title: 'Integrations',
-  //       href: paths.dashboard.settings.integrations,
-  //       icon: 'plugs-connected',
-  //     },
-  //   ],
-  // },
+  {
+    key: 'organization',
+    title: 'Organization',
+    items: [
+      { key: 'billing', title: 'Billing & plans', href: paths.dashboard.settings.billing, icon: 'credit-card' },
+      // { key: 'team', title: 'Team', href: paths.dashboard.settings.team, icon: 'users-three' },
+      // {
+      //   key: 'integrations',
+      //   title: 'Integrations',
+      //   href: paths.dashboard.settings.integrations,
+      //   icon: 'plugs-connected',
+      // },
+    ],
+  },
 ] satisfies NavItemConfig[];
 
 const icons = {

@@ -81,31 +81,45 @@ export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.
         }}
       >
         <Stack component="li" key="google-access" spacing={1.5}>
-<Button
+        <Button
   color="secondary"
-  endIcon={<Box alt="" component="img" height={24} src={provider.logo} width={24}/>}
+  endIcon={<Box alt="" component="img" height={24} src={provider.logo} width={24} />}
   key={provider.id}
   onClick={(): void => {
     console.log('click');
   }}
   variant="outlined"
-  sx={{
-    backgroundColor: 'var(--mui-palette-neutral-800)',
-    borderColor: 'var(--mui-palette-neutral-900)',
-    color: 'var(--NavItem-active-color)',
-    fontWeight: 500,
-    textTransform: 'none',
-    borderRadius: '6px',
-    padding: '8px 16px',
-    marginBottom: '10px',
-    '&:hover': {
-      backgroundColor: 'var(--mui-palette-neutral-950)',
-      borderColor: 'var(--mui-palette-neutral-800)',
+  sx={[
+    {
+      fontWeight: 500,
+      textTransform: 'none',
+      borderRadius: '6px',
+      padding: '8px 16px',
+      marginBottom: '10px',
+      '& .MuiButton-endIcon': {
+        marginLeft: '10px',
+      },
+      transition: 'all 0.2s ease-in-out',
     },
-    '& .MuiButton-endIcon': {
-      marginLeft: '10px',
-    },
-  }}
+    colorScheme === 'light' ? {
+      backgroundColor: 'var(--mui-palette-neutral-800)',
+      borderColor: 'var(--mui-palette-neutral-900)',
+      color: 'var(--NavItem-active-color)',
+      '&:hover': {
+        backgroundColor: 'var(--mui-palette-neutral-950)',
+        borderColor: 'var(--mui-palette-neutral-800)',
+      },
+    } : {
+      // Estilos para modo oscuro
+      backgroundColor: 'var(--mui-palette-neutral-200)',
+      borderColor: 'var(--mui-palette-neutral-300)',
+      color: 'var(--mui-palette-neutral-900)',
+      '&:hover': {
+        backgroundColor: 'var(--mui-palette-neutral-100)',
+        borderColor: 'var(--mui-palette-neutral-200)',
+      },
+    }
+  ]}
 >
   Grant access to {provider.name}
 </Button>

@@ -16,6 +16,7 @@ import type { User } from '@/types/user';
 import { config } from '@/config';
 import { paths } from '@/paths';
 import { AuthStrategy } from '@/lib/auth/strategy';
+import { UserData } from '@/hooks/use-client';
 import { RouterLink } from '@/components/core/link';
 
 import { Auth0SignOut } from './auth0-sign-out';
@@ -23,7 +24,6 @@ import { CognitoSignOut } from './cognito-sign-out';
 import { CustomSignOut } from './custom-sign-out';
 import { FirebaseSignOut } from './firebase-sign-out';
 import { SupabaseSignOut } from './supabase-sign-out';
-import { UserData } from '@/hooks/use-client';
 
 export interface UserPopoverProps {
   anchorEl: null | Element;
@@ -54,7 +54,7 @@ export function UserPopover({ anchorEl, onClose, open, user }: UserPopoverProps)
           <ListItemIcon>
             <UserIcon />
           </ListItemIcon>
-          Account
+          Accountas
         </MenuItem>
         <MenuItem component={RouterLink} href={paths.dashboard.settings.security} onClick={onClose}>
           <ListItemIcon>

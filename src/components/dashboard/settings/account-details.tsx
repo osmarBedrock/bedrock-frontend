@@ -155,7 +155,7 @@ export function AccountDetails({user, updateFunction}: AccountProps): React.JSX.
               </FormControl>
               <Stack direction="row" spacing={2}>
                 <FormControl sx={{ flex: '1 1 auto' }}>
-                  <InputLabel>first Name</InputLabel>
+                  <InputLabel>First Name</InputLabel>
                   <OutlinedInput name="firstName"
                     value={formData.firstName}
                     onChange={handleChange}
