@@ -33,7 +33,7 @@ function useRecipients(): {
 
   const handleRecipientRemove = React.useCallback((recipientId: string) => {
     setRecipients((prevState) => {
-      return prevState.filter((recipient) => recipient.id !== recipientId);
+      return prevState.filter((recipient) => recipient.id.toString() !== recipientId);
     });
   }, []);
 
@@ -49,7 +49,7 @@ export function ComposeView(): React.JSX.Element {
 
   const handleSendMessage = React.useCallback(
     async (type: MessageType, content: string) => {
-      const recipientIds = recipients.map((recipient) => recipient.id);
+      const recipientIds: string[] = recipients.map((recipient) => recipient.id.toString());
 
       const threadId = createThread({ type: 'group', recipientIds });
 

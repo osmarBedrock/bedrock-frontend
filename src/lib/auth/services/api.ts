@@ -1,8 +1,8 @@
 // api.ts (archivo separado para configuración de Axios)
-import { User } from '@/types/user';
-import axios from 'axios';
+import type { User } from '@/types/user';
+import axios, { type AxiosError } from 'axios';
 
-const API_URL: string = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL: string = import.meta.env.VITE_API_URL as string || 'http://localhost:3000/api';
 
 // 1. Crear instancia de Axios
 const api = axios.create({
@@ -18,21 +18,20 @@ api.interceptors.request.use(
     // Solo ejecutar en el lado cliente (Next.js compatibilidad)
     if (typeof window !== 'undefined') {
       try {
-        const userData: User = JSON.parse(localStorage.getItem('custom-auth-user') || '');
+        const userData: User = JSON.parse(localStorage.getItem('custom-auth-user') || '') as User;
         if (userData) {
           if (userData.id && config.headers) {
             config.headers['userId'] = userData.id;
           }
         }
       } catch (error) {
-        console.error('Error parsing user data:', error);
         // Opcional: Limpiar datos corruptos
         localStorage.removeItem('custom-auth-user');
       }
     }
     return config;
   },
-  (error) => {
+  (error: AxiosError) => {
     return Promise.reject(error);
   }
 );

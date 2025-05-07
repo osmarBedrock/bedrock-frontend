@@ -19,12 +19,11 @@ import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
 
 import { paths } from '@/paths';
-import { authClient } from '@/lib/auth/custom/client';
+import { authClient, SignUpParams } from '@/lib/auth/custom/client';
 import { useUser } from '@/hooks/use-user';
 import { RouterLink } from '@/components/core/link';
 import { DynamicLogo } from '@/components/core/logo';
 import { toast } from '@/components/core/toaster';
-import { useAccountStatus } from "@/hooks/useAccountStatus";
 
 
 interface OAuthProvider {
@@ -58,11 +57,10 @@ const defaultValues = {
   domain: '',
   password: '',
   terms: false,
-} satisfies Values;
+} satisfies SignUpParams;
 
 export function SignUpForm(): React.JSX.Element {
   const { checkSession } = useUser();
-  const { setStatus } = useAccountStatus();
 
   const [isPending, setIsPending] = React.useState<boolean>(false);
 
@@ -80,7 +78,7 @@ export function SignUpForm(): React.JSX.Element {
 
     if (error) {
       setIsPending(false);
-      toast.error(error);
+      toast.error(error.message);
       return;
     }
 
@@ -90,36 +88,32 @@ export function SignUpForm(): React.JSX.Element {
   }, []);
 
   const onSubmit = React.useCallback(
-    async (values: Values): Promise<void> => {
+    async (values: SignUpParams): Promise<void> => {
       setIsPending(true);
       try {
         // 1. Marcar como pendiente al iniciar
-        setStatus("pending");
 
         const { error } = await authClient.signUp(values);
 
         if (error) {
           // 2. Si hay error, volver a inactive
-          setStatus("inactive");
           setError('root', { type: 'server', message: error.message });
           return;
         }
 
         // 3. Si es exitoso, marcar como active
-        setStatus("active");
         await checkSession?.();
 
         // Opcional: Redirigir después de registro exitoso
         // window.location.href = paths.dashboard;
 
       } catch (err) {
-        setStatus("inactive");
         setError('root', { type: 'server', message: 'An unexpected error occurred' });
       } finally {
         setIsPending(false);
       }
     },
-    [checkSession, setError, setStatus] // Añade setStatus a las dependencias
+    [checkSession, setError]
   );
 
   return (
@@ -261,7 +255,7 @@ export function SignUpForm(): React.JSX.Element {
             </Button>
             {status === "pending" && (
               <Alert severity="info" sx={{ mt: 2 }}>
-                Your account is being created. You'll be redirected shortly.
+                Your account is being created. You&apos;ll be redirected shortly.
               </Alert>
             )}
           </Stack>

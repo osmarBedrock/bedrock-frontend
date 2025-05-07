@@ -18,7 +18,7 @@ import type { Message, MessageType, Thread, ThreadType } from './types';
 function useThread(threadId: string): Thread | undefined {
   const { threads } = React.useContext(ChatContext);
 
-  return threads.find((thread) => thread.id === threadId);
+  return threads.find((thread) => thread.id.toString() === threadId);
 }
 
 function useMessages(threadId: string): Message[] {

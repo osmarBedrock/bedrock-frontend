@@ -11,7 +11,6 @@ import { paths } from '@/paths';
 import { AuthStrategy } from '@/lib/auth/strategy';
 import { logger } from '@/lib/default-logger';
 import { useUser } from '@/hooks/use-user';
-import { useAccountStatus } from '@/hooks/useAccountStatus';
 
 export interface AuthGuardProps {
   children: React.ReactNode;
@@ -20,7 +19,6 @@ export interface AuthGuardProps {
 export function AuthGuard({ children }: Readonly<AuthGuardProps>): React.JSX.Element {
   const navigate = useNavigate();
   const { user, error, isLoading } = useUser();
-  const { status } = useAccountStatus();
   const [isChecking, setIsChecking] = React.useState<boolean>(true);
   const [loggedState, setLoggedState] = React.useState<string>('');
 
@@ -29,22 +27,20 @@ export function AuthGuard({ children }: Readonly<AuthGuardProps>): React.JSX.Ele
     if (process.env.NODE_ENV === 'development') {
       const currentState = JSON.stringify({
         user: user ? 'Authenticated' : 'Guest',
-        status,
         loading: isLoading ? 'Checking' : 'Ready',
         error: error || 'None'
       });
 
       if (currentState !== loggedState) {
-        console.log('[AuthGuard State]', {
+        logger.debug('[AuthGuard State]', {
           user: user ? 'Authenticated' : 'Guest',
-          status,
           loading: isLoading ? 'Checking' : 'Ready',
           error: error || 'None'
         });
         setLoggedState(currentState);
       }
     }
-  }, [user, status, isLoading, error, loggedState]);
+  }, [user, isLoading, error, loggedState]);
 
   const checkPermissions = React.useCallback(async (): Promise<void> => {
     try {
@@ -78,7 +74,7 @@ export function AuthGuard({ children }: Readonly<AuthGuardProps>): React.JSX.Ele
   }, [isLoading, error, user, navigate]);
 
   React.useEffect(() => {
-    checkPermissions();
+    void checkPermissions();
   }, [checkPermissions]);
 
   if (isChecking || isLoading) {
@@ -105,29 +101,5 @@ export function AuthGuard({ children }: Readonly<AuthGuardProps>): React.JSX.Ele
     );
   }
 
-  switch (status) {
-    case 'inactive':
-      return (
-        <Alert severity="warning" sx={{ m: 2 }}>
-          Please complete your registration to access this content
-        </Alert>
-      );
-
-    case 'pending':
-      return (
-        <Alert severity="info" sx={{ m: 2 }}>
-          Your account is being verified. Please wait...
-        </Alert>
-      );
-
-    case 'active':
-      return <>{children}</>;
-
-    default:
-      return (
-        <Alert severity="error" sx={{ m: 2 }}>
-          Invalid account state
-        </Alert>
-      );
-  }
+  return <>{children}</>;
 }

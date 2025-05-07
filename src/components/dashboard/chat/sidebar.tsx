@@ -143,7 +143,7 @@ function SidebarContent({
 
   const handleSearchSelect = React.useCallback(
     (contact: Contact) => {
-      onSelectContact?.(contact.id);
+      onSelectContact?.(contact.id.toString());
 
       setSearchFocused(false);
       setSearchQuery('');
@@ -202,11 +202,11 @@ function SidebarContent({
         >
           {threads.map((thread) => (
             <ThreadItem
-              active={currentThreadId === thread.id}
+              active={currentThreadId === thread.id.toString()}
               key={thread.id}
-              messages={messages.get(thread.id) ?? []}
+              messages={messages.get(thread.id.toString()) ?? []}
               onSelect={() => {
-                handleThreadSelect(thread.type, thread.id);
+                handleThreadSelect(thread.type, thread.id.toString());
               }}
               thread={thread}
             />

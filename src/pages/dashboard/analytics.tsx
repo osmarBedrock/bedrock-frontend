@@ -9,14 +9,10 @@ import { useSearchParams } from 'react-router-dom';
 import type { Metadata } from '@/types/metadata';
 import { config } from '@/config';
 import { CountrySessionsVsBounce } from '@/components/dashboard/analytics/country-sessions-vs-bounce-rate';
-import { Devices } from '@/components/dashboard/analytics/devices';
-import { InboundOutbound } from '@/components/dashboard/analytics/inbound-outbound';
-import { Insight } from '@/components/dashboard/analytics/insight';
 import { Summary } from '@/components/dashboard/analytics/summary';
 import { RangeButton } from '@/components/dashboard/analytics/range-button';
 import type { Range } from '@/types/analytics';
 import { useAnalytics } from '@/hooks/use-analytics';
-import { AppLimits } from '@/components/dashboard/overview/app-limits';
 import { PerformanceChartCard } from '@/components/dashboard/overview/pie-chart-performance';
 
 const metadata: Metadata = {
@@ -33,10 +29,8 @@ export function Page(): React.JSX.Element {
     data,
     fetchAnalyticsData,
     loaderData,
-    loaderSessionData,
     metric,
     refreshData,
-    sessionData,
     totalSessions,
     totalUsers,
     loaderPerformanceMetrics,
@@ -50,8 +44,8 @@ export function Page(): React.JSX.Element {
   } = useAnalytics(setRange, params, range, 'activeUsers');
 
   React.useEffect(() => {
-    fetchAnalyticsData();
-    fetchPageSpeedData();
+    void fetchAnalyticsData();
+    void fetchPageSpeedData();
   }, [params.get('range')]);
 
   React.useEffect(() => {

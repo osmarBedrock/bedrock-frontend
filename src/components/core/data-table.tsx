@@ -57,11 +57,11 @@ export function DataTable<TRowModel extends object & { id?: RowId | null }>({
   const [rowsPerPage, setRowsPerPage] = React.useState(7);
   const [page, setPage] = React.useState(0);
 
-  const handleChangePage = (event: unknown, newPage: number) => {
+  const handleChangePage = (event: unknown, newPage: number): void => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>): void => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
@@ -69,7 +69,7 @@ export function DataTable<TRowModel extends object & { id?: RowId | null }>({
   const visibleRows = React.useMemo(
     () =>
       [...rows].slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
-    [page, rowsPerPage, rows?.length],
+    [page, rowsPerPage, rows],
   );
 
   return (

@@ -21,13 +21,13 @@ import { CognitoSignOut } from './cognito-sign-out';
 import { CustomSignOut } from './custom-sign-out';
 import { FirebaseSignOut } from './firebase-sign-out';
 import { SupabaseSignOut } from './supabase-sign-out';
-import { User } from '@/types/user';
+import type { User } from '@/types/user';
 
 export interface UserPopoverProps {
   anchorEl: null | Element;
   onClose?: () => void;
   open: boolean;
-  user: User;
+  user: User | null;
 }
 
 export function UserPopover({ anchorEl, onClose, open, user }: UserPopoverProps): React.JSX.Element {
@@ -41,9 +41,9 @@ export function UserPopover({ anchorEl, onClose, open, user }: UserPopoverProps)
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
     >
       <Box sx={{ p: 2 }}>
-        <Typography>{user.firstName}</Typography>
+        <Typography>{user?.firstName}</Typography>
         <Typography color="text.secondary" variant="body2">
-          {user.email}
+          {user?.email}
         </Typography>
       </Box>
       <Divider />
@@ -52,7 +52,7 @@ export function UserPopover({ anchorEl, onClose, open, user }: UserPopoverProps)
           <ListItemIcon>
             <UserIcon />
           </ListItemIcon>
-          Account
+          Accounts
         </MenuItem>
         <MenuItem component={RouterLink} href={paths.dashboard.settings.security} onClick={onClose}>
           <ListItemIcon>

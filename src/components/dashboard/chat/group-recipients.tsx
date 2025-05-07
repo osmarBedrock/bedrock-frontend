@@ -175,7 +175,7 @@ export function GroupRecipients({
             key={recipient.id}
             label={recipient.name}
             onDelete={() => {
-              onRecipientRemove?.(recipient.id);
+              onRecipientRemove?.(recipient.id.toString());
             }}
           />
         ))}

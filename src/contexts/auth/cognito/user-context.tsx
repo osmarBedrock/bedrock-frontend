@@ -31,7 +31,7 @@ export function UserProvider({ children }: UserProviderProps): React.JSX.Element
     // Only run on initial mount.
     getCurrentUser()
       .then((user) => {
-        setState({ user: { id: user.userId, email: user.username }, error: null, isLoading: false });
+        setState({ user: { id: Number(user.userId), email: user.username }, error: null, isLoading: false });
       })
       .catch(() => {
         setState({ user: null, error: null, isLoading: false });
@@ -40,7 +40,7 @@ export function UserProvider({ children }: UserProviderProps): React.JSX.Element
 
   React.useEffect(() => {
     function handleSignedIn(data: AuthUser): void {
-      setState({ user: { id: data.userId, email: data.username }, error: null, isLoading: false });
+      setState({ user: { id: Number(data.userId), email: data.username }, error: null, isLoading: false });
     }
 
     function handleSignedOut(): void {

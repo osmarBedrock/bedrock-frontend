@@ -5,11 +5,9 @@ import Avatar from '@mui/material/Avatar';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import { useUser } from '@/hooks/use-user';
 
-export const workspaces = [
-  { name: 'Prestige Oral and Facial Surgery', avatar: '/assets/company-image-3.jpg' },
-  { name: 'Carpatin', avatar: '/assets/workspace-avatar-2.png' },
-] satisfies Workspaces[];
+export const workspaces: Workspaces[] = [];
 
 export interface Workspaces {
   name: string;
@@ -29,6 +27,8 @@ export function WorkspacesPopover({
   onClose,
   open = false,
 }: WorkspacesPopoverProps): React.JSX.Element {
+  const { user } = useUser();
+  workspaces.push({ name: user?.enterpriseName || '', avatar: user?.enterprisePicture || '/assets/workspace-avatar-2.png' });
   return (
     <Menu
       anchorEl={anchorEl}
@@ -38,11 +38,11 @@ export function WorkspacesPopover({
       slotProps={{ paper: { sx: { width: '250px' } } }}
       transformOrigin={{ horizontal: 'right', vertical: 'top' }}
     >
-      {workspaces.map((workspace) => (
+      {workspaces?.map((workspace) => (
         <MenuItem
           key={workspace.name}
           onClick={() => {
-            onChange?.(workspace.name);
+            onChange?.(workspace.name || '');
           }}
         >
           <ListItemAvatar>

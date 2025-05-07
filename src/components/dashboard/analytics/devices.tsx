@@ -17,9 +17,10 @@ import { Cell, Pie, PieChart, Tooltip } from 'recharts';
 
 import { NoSsr } from '@/components/core/no-ssr';
 import { Skeleton } from '@mui/material';
+import type { SessionData } from '@/types/analytics';
 
 export interface DevicesProps {
-  data: { name: string; value: number; color: string }[];
+  data: SessionData[] | null | undefined;
   loader: boolean;
 }
 const COLORS = [
@@ -54,19 +55,19 @@ export function Devices({ data,loader }: DevicesProps): React.JSX.Element {
         <Stack divider={<Divider />} spacing={3}>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             {
-              loader 
+              loader
               ? (
                 <Skeleton variant="circular" width={150} height={150}  />
               )
               : (<NoSsr fallback={<Box sx={{ height: `${chartSize}px`, width: `${chartSize}px` }} />}>
-          
-              
+
+
                 <PieChart height={chartSize} margin={{ top: 0, right: 0, bottom: 0, left: 0 }} width={chartSize}>
                   <Pie
                     animationDuration={300}
                     cx={chartSize / 2}
                     cy={chartSize / 2}
-                    data={data}
+                    data={data ?? []}
                     dataKey="value"
                     innerRadius={chartSize / 2 - chartTickness}
                     nameKey="name"
@@ -75,7 +76,7 @@ export function Devices({ data,loader }: DevicesProps): React.JSX.Element {
                   >
                     {data?.map(
                       (entry, i): React.JSX.Element => (
-                        <Cell 
+                        <Cell
                         key={`cell-${i}`}
                         fill={COLORS[i % COLORS.length]} />
                       )
@@ -87,7 +88,7 @@ export function Devices({ data,loader }: DevicesProps): React.JSX.Element {
             }
           </Box>
           {
-          loader 
+          loader
             ? (
               <>
                 <Skeleton animation="wave" />
@@ -104,7 +105,7 @@ export function Devices({ data,loader }: DevicesProps): React.JSX.Element {
 }
 
 interface LegendProps {
-  payload?: { name: string; value: number; color: string }[];
+  payload?: SessionData[] | null;
 }
 
 function Legend({ payload }: LegendProps): React.JSX.Element {

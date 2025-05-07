@@ -68,7 +68,6 @@ export function PlansTable(): React.JSX.Element {
                   id="Essentials-plan"
                   name="Essentials Plan"
                   price={isAnnual ? annualPrices.essentials : monthlyPrices.essentials}
-                  period={isAnnual ? '/year' : '/month'}
                 />
               </Grid>
 
@@ -90,7 +89,6 @@ export function PlansTable(): React.JSX.Element {
                   name="Pro Plan"
                   popular
                   price={isAnnual ? annualPrices.pro : monthlyPrices.pro}
-                  period={isAnnual ? '/year' : '/month'}
                 />
               </Grid>
 
@@ -114,7 +112,6 @@ export function PlansTable(): React.JSX.Element {
                   id="elite-plan"
                   name="Elite Plan"
                   price={isAnnual ? annualPrices.elite : monthlyPrices.elite}
-                  period={isAnnual ? '/year' : '/month'}
                 />
               </Grid>
             </Grid>

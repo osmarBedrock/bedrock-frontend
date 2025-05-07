@@ -10,19 +10,13 @@ import { Link as LinkIcon } from '@phosphor-icons/react/dist/ssr/Link';
 import { Paperclip as PaperclipIcon } from '@phosphor-icons/react/dist/ssr/Paperclip';
 import { Smiley as SmileyIcon } from '@phosphor-icons/react/dist/ssr/Smiley';
 
-import type { User } from '@/types/user';
-
-const user = {
-  id: 'USR-000',
-  name: 'Sofia Rivers',
-  avatar: '/assets/avatar.png',
-  email: 'sofia@devias.io',
-} satisfies User;
+import { useUser } from '@/hooks/use-user';
 
 export function Reply(): React.JSX.Element {
+  const { user } = useUser();
   return (
     <Stack direction="row" spacing={2} sx={{ alignItems: 'flex-start', flex: '0 0 auto', p: 3 }}>
-      <Avatar src={user.avatar} />
+      <Avatar src={user?.avatar ?? ''} />
       <Stack spacing={2} sx={{ flex: '1 1 auto' }}>
         <OutlinedInput maxRows={7} minRows={3} multiline placeholder="Leave a message" />
         <Stack direction="row" spacing={3} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>

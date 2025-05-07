@@ -201,10 +201,10 @@ function UserButton(): React.JSX.Element {
           }}
           variant="dot"
         >
-          <Avatar src={user?.avatar || '/assets/avatar.png'} />
+          <Avatar src={user?.avatar || '/assets/placeholder-person-image.png'} />
         </Badge>
       </Box>
-      <UserPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} user={user} />
+      <UserPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} user={user ?? null} />
     </React.Fragment>
   );
 }

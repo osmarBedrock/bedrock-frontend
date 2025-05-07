@@ -2,12 +2,13 @@
 
 import * as React from 'react';
 import { Box, Skeleton, Typography, Card, CardContent, CardHeader, Stack, Avatar } from '@mui/material';
-import { 
+import {
   User as UsersIcon,
   TrafficCone as SessionsIcon,
   ArrowUUpLeft as BounceIcon,
   Clock as DurationIcon
 } from '@phosphor-icons/react';
+import { SetURLSearchParams } from 'react-router-dom';
 
 const iconStyles = {
   fontSize: '24px',
@@ -29,7 +30,7 @@ function KpiItem({ title, value, active, onClick, loading }: KpiItemProps) {
       style: iconStyles,
       weight: "fill" as const
     };
-    
+
     switch(title) {
       case 'Users': return <UsersIcon {...iconProps} />;
       case 'Sessions': return <SessionsIcon {...iconProps} />;
@@ -40,7 +41,7 @@ function KpiItem({ title, value, active, onClick, loading }: KpiItemProps) {
   };
 
   return (
-    <Box 
+    <Box
       onClick={onClick}
       sx={{
         p: 2,
@@ -93,7 +94,7 @@ function KpiItem({ title, value, active, onClick, loading }: KpiItemProps) {
 
 interface SummaryProps {
   metric: string;
-  setParams: (params: URLSearchParams) => URLSearchParams;
+  setParams: SetURLSearchParams;
   totalUsers: number;
   totalSessions: number;
   averageBounceRate: number;
@@ -113,7 +114,7 @@ export function Summary({
   children
 }: SummaryProps) {
   const handleMetricChange = (newMetric: string) => {
-    setParams(params => {
+    setParams((params: URLSearchParams) => {
       params.set("metric", newMetric);
       return params;
     });
@@ -124,8 +125,8 @@ export function Summary({
       <CardHeader title="Analytics Overview" />
       <CardContent>
         <Stack spacing={4}>
-          <Box sx={{ 
-            display: 'flex', 
+          <Box sx={{
+            display: 'flex',
             flexWrap: 'wrap',
             gap: 2,
             justifyContent: 'space-between'
@@ -134,37 +135,37 @@ export function Summary({
               title="Users"
               value={new Intl.NumberFormat('en-US').format(totalUsers)}
               active={metric === 'activeUsers'}
-              onClick={() => handleMetricChange('activeUsers')}
+              onClick={() => { handleMetricChange('activeUsers') }}
               loading={loader}
             />
             <KpiItem
               title="Sessions"
               value={new Intl.NumberFormat('en-US').format(totalSessions)}
               active={metric === 'sessions'}
-              onClick={() => handleMetricChange('sessions')}
+              onClick={() => { handleMetricChange('sessions') }}
               loading={loader}
             />
             <KpiItem
               title="Bounce rate"
-              value={new Intl.NumberFormat('en-US', { 
-                style: 'percent', 
-                maximumFractionDigits: 2 
+              value={new Intl.NumberFormat('en-US', {
+                style: 'percent',
+                maximumFractionDigits: 2
               }).format(averageBounceRate / 100)}
               active={metric === 'bounceRate'}
-              onClick={() => handleMetricChange('bounceRate')}
+              onClick={() => { handleMetricChange('bounceRate') }}
               loading={loader}
             />
             <KpiItem
               title="Duration"
               value={`${(averageDuration / 60).toFixed(2)} min`}
               active={metric === 'averageSessionDuration'}
-              onClick={() => handleMetricChange('averageSessionDuration')}
+              onClick={() => { handleMetricChange('averageSessionDuration') }}
               loading={loader}
             />
           </Box>
 
-          {children ? <Box 
-              sx={{ 
+          {children ? <Box
+              sx={{
                 height: '400px',
                 '& .MuiCard-root': {
                   boxShadow: 'none',

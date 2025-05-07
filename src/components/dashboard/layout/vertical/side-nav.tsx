@@ -53,14 +53,14 @@ export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.
       const { url, error } = await authClient.signInWithOAuth({ provider: 'google' });
 
       if (error) {
-        toast.error(error);
+        toast.error(String(error));
         return;
       }
 
       window.location.href = url ?? '';
 
     } catch (error) {
-      console.error('Error al iniciar sesión con Google:', error);
+      toast.error(String(error));
     }
   };
 
@@ -108,23 +108,37 @@ export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.
             key={provider.id}
             onClick={handleGoogleAuth}
             variant="outlined"
-            sx={{
-              backgroundColor: 'var(--mui-palette-neutral-800)',
-              borderColor: 'var(--mui-palette-neutral-900)',
-              color: 'var(--NavItem-active-color)',
-              fontWeight: 500,
-              textTransform: 'none',
-              borderRadius: '6px',
-              padding: '8px 16px',
-              marginBottom: '10px',
-              '&:hover': {
-                backgroundColor: 'var(--mui-palette-neutral-950)',
-                borderColor: 'var(--mui-palette-neutral-800)',
+            sx={[
+              {
+                fontWeight: 500,
+                textTransform: 'none',
+                borderRadius: '6px',
+                padding: '8px 16px',
+                marginBottom: '10px',
+                '& .MuiButton-endIcon': {
+                  marginLeft: '10px',
+                },
+                transition: 'all 0.2s ease-in-out',
               },
-              '& .MuiButton-endIcon': {
-                marginLeft: '10px',
-              },
-            }}
+              colorScheme === 'light' ? {
+                backgroundColor: 'var(--mui-palette-neutral-800)',
+                borderColor: 'var(--mui-palette-neutral-900)',
+                color: 'var(--NavItem-active-color)',
+                '&:hover': {
+                  backgroundColor: 'var(--mui-palette-neutral-950)',
+                  borderColor: 'var(--mui-palette-neutral-800)',
+                },
+              } : {
+                // Estilos para modo oscuro
+                backgroundColor: 'var(--mui-palette-neutral-200)',
+                borderColor: 'var(--mui-palette-neutral-300)',
+                color: 'var(--mui-palette-neutral-900)',
+                '&:hover': {
+                  backgroundColor: 'var(--mui-palette-neutral-100)',
+                  borderColor: 'var(--mui-palette-neutral-200)',
+                },
+              }
+            ]}
           >
             Grant access to {provider.name}
           </Button>
@@ -226,7 +240,7 @@ function NavItem({
   const isBranch = children && !href;
   const showChildren = Boolean(children && open);
   const { user } = useUser();
-  const [isDisabled, setIsDisabled] = React.useState<boolean>(href && !user?.website?.googleAccessToken ? true : false);
+  const isDisabled = href && !user?.website?.googleAccessToken;
 
   if (buttonVariant) {
     return (
@@ -317,7 +331,8 @@ function NavItem({
             ...(isDisabled &&
               !active && { bgcolor: 'var(--NavItem-hover-background)', color: 'var(--NavItem-hover-color)' }),
           },
-          disabled: isDisabled,
+          pointerEvents: !isDisabled ? 'none' : 'auto',
+          opacity: !isDisabled ? 0.5 : 1
         }}
         tabIndex={0}
       >

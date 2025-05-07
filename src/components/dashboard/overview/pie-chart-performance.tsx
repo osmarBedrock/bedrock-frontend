@@ -11,9 +11,14 @@ import {
   Skeleton,
   Grid,
 } from "@mui/material";
-import { PieChart, Pie, Cell, ResponsiveContainer, Sector, Tooltip, TooltipProps } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Sector, Tooltip, type TooltipProps } from "recharts";
 import { DotsThree as DotsThreeIcon } from "@phosphor-icons/react/dist/ssr/DotsThree";
 import { Speedometer as SpeedometerIcon } from "@phosphor-icons/react/dist/ssr/Speedometer";
+import type { ValueType, NameType } from "recharts/types/component/DefaultTooltipContent";
+import type { ChartMetricsData, DataPieChart } from "@/types/analytics";
+import type { PieSectorDataItem } from "recharts/types/polar/Pie";
+import type { ActiveShape } from "recharts/types/util/types";
+import { formattedData } from "@/utils/analytics";
 
 // Tipado de datos para el gráfico
 export interface Metrics {
@@ -33,32 +38,72 @@ export interface PerformanceChartProps {
   height?: number;
   innerRadius?: number;
   needComplement?: boolean;
+  loader?: boolean;
+  hasErrors?: boolean;
+  metricsData: MetricData[];
 }
 
-const renderActiveShape = (props: any) => {
-  const RADIAN = Math.PI / 180;
+export interface CustomTooltipProps extends TooltipProps<ValueType, NameType> {
+  active?: boolean;
+  payload?: {
+    value: number;
+    name: string;
+    payload: {
+      value: number;
+      name: string;
+      penalty?: number;
+    };
+  }[];
+}
+
+export interface ChartSectionProps {
+  metrics: Metrics[];
+  width?: number;
+  height?: number;
+  innerRadius?: number;
+  needComplement?: boolean;
+  activeIndex?: number;
+  onPieEnter?: (data: Metrics, index: number) => void;
+}
+
+const renderActiveShape = (props: {
+  stroke: string;
+  fill: string;
+  legendType: string;
+  cx: number;
+  cy: number;
+  startAngle: number;
+  endAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+  paddingAngle: number;
+  labelLine: boolean;
+  hide: boolean;
+  minAngle: number;
+  isAnimationActive: boolean;
+  animationBegin: number;
+  animationDuration: number;
+  animationEasing: string;
+  nameKey: string;
+  blendStroke: boolean;
+  rootTabIndex: number;
+  midAngle: number;
+  percent: number;
+  value: number;
+  payload: {
+    value: number;
+  };
+}): ActiveShape<PieSectorDataItem> => {
   const {
     cx,
     cy,
-    midAngle,
     innerRadius,
     outerRadius,
     startAngle,
     endAngle,
     fill,
     payload,
-    percent,
-    value
   } = props;
-  const sin = Math.sin(-RADIAN * midAngle);
-  const cos = Math.cos(-RADIAN * midAngle);
-  const sx = cx + (outerRadius + 10) * cos;
-  const sy = cy + (outerRadius + 10) * sin;
-  const mx = cx + (outerRadius + 30) * cos;
-  const my = cy + (outerRadius + 30) * sin;
-  const ex = mx + (cos >= 0 ? 1 : -1) * 22;
-  const ey = my;
-  const textAnchor = cos >= 0 ? "start" : "end";
 
   return (
     <g>
@@ -73,64 +118,63 @@ const renderActiveShape = (props: any) => {
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
-      />        
+      />
     </g>
   );
 };
 
-const CustomTooltip = ({ active, payload }: TooltipProps<any, any>) => {
-  if (active && payload && payload.length) {
-    const data = payload[0].payload; // Accede a los datos del elemento seleccionado
+function CustomTooltip({ active, payload }: CustomTooltipProps): React.JSX.Element{
+  if (active && payload?.length) {
+    const data = payload[0].payload;
     return (
       <div>
         <p>{` +${data.penalty}`}</p>
       </div>
     );
   }
-
-  return null;
+  return <>
+  </>;
 };
-// Componente para la gráfica
-const PerformanceChart: React.FC<PerformanceChartProps> = ({
-  metrics,
-  width = 300,
-  height = 300,
-  innerRadius = 90,
-  needComplement = false
-}) => {
-  const [activeIndex, setActiveIndex] = React.useState<number>(0);
 
-  const onPieEnter = (_: any, index: number) => setActiveIndex(index);
-  const formattedData: any = metrics?.map(({ value, ...rest }) => [{
-    ...rest,
-    value,
-    fill:
-      value <= 49 ? "#f33" : value <= 89 ? "#fa3" : value <= 100 ? "#0c6" : "#ccc",
-  },
-  needComplement ? { value: 100 - value, fill: "var(--mui-palette-background-level1)", name: "" } : null])?.flat()?.filter(element=>element);
-  
+
+// Componente para la gráfica
+function PerformanceChart({
+  chart,
+  needComplement = false
+}: ChartMetricsData): React.JSX.Element {
+  const [activeIndex, setActiveIndex] = React.useState<number>(0);
+  const width = 300;
+  const height = 300;
+  const innerRadius = 90;
+
+  const onPieEnter = (_: string, index: number): void => {
+    setActiveIndex(index);
+  };
+
+  const dataForPieChart: DataPieChart[] = formattedData(chart, needComplement);
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
       <ResponsiveContainer width={width} height={height}>
         <PieChart>
           <Pie
             activeIndex={activeIndex}
-            activeShape={renderActiveShape}
-            data={formattedData}
+            activeShape={renderActiveShape as unknown as ActiveShape<PieSectorDataItem>}
+            data={dataForPieChart}
             cx="50%"
             cy="50%"
             innerRadius={innerRadius}
             dataKey="value"
             onMouseEnter={onPieEnter}
           >
-            {formattedData.map((entry: any, index: number) => (
-              <Cell key={`cell-${index}`} fill={entry?.fill} />
+            {dataForPieChart.map((entry: DataPieChart, index: number) => (
+              <Cell key={`cell-${index}` as unknown as string} fill={entry?.fill} />
             ))}
           </Pie>
-          { formattedData[0]?.penalty && <Tooltip content={<CustomTooltip />} />}
+          { dataForPieChart[0]?.penalty && <Tooltip content={<CustomTooltip />} />}
         </PieChart>
       </ResponsiveContainer>
-      <h3 style={{ color: formattedData[activeIndex]?.fill }}>{formattedData[activeIndex]?.name}</h3>
+      <h3 style={{ color: dataForPieChart[activeIndex]?.fill }}>{dataForPieChart[activeIndex]?.name}</h3>
     </Box>
   );
 };
@@ -138,17 +182,17 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
 
 // Tipado para el Card principal
 export interface PerformanceChartCardProps {
-  metricsData: MetricData[]; // Puede contener varias métricas
+  metricsData: ChartMetricsData[]; // Puede contener varias métricas
   loader: boolean;
   hasErrors: boolean;
 }
 
 // Componente principal para la card con 1 o más gráficos
-export const PerformanceChartCard: React.FC<PerformanceChartCardProps> = ({
+export function PerformanceChartCard ({
   metricsData,
   loader,
   hasErrors
-}) => {
+}: PerformanceChartCardProps): React.JSX.Element {
   return (
     <Card>
       <CardHeader
@@ -174,9 +218,9 @@ export const PerformanceChartCard: React.FC<PerformanceChartCardProps> = ({
           <Box sx={{ textAlign: "center", color: "red" }}>Error al cargar datos</Box>
         ) : (
           <Grid container spacing={2} justifyContent="center" >
-            {metricsData.map((metric: any, index: number) => (
-              <Grid item key={index} xs={12} sm={6} md={4}>
-                <PerformanceChart metrics={metric.chart} needComplement={metric.needComplement}  />
+            {metricsData.map((metric:  ChartMetricsData, index: number) => (
+              <Grid item key={index  as unknown as number} xs={12} sm={6} md={4}>
+                <PerformanceChart chart={metric.chart} needComplement={metric.needComplement}  />
               </Grid>
             ))}
           </Grid>

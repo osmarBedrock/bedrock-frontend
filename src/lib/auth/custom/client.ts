@@ -1,27 +1,17 @@
 'use client';
 
-import type { User } from '@/types/user';
+import type { User, Website, Integration, VerificationData } from '@/types/user';
 import { AuthService } from '../services/auth';
-
-function generateToken(): string {
-  const arr = new Uint8Array(12);
-  window.crypto.getRandomValues(arr);
-  return Array.from(arr, (v) => v.toString(16).padStart(2, '0')).join('');
-}
-
-const user = {
-  id: 'USR-000',
-  avatar: '/assets/avatar.png',
-  firstName: 'Sofia',
-  lastName: 'Rivers',
-  email: 'sofia@devias.io',
-} satisfies User;
+import type { AxiosError } from 'axios';
 
 export interface SignUpParams {
   firstName: string;
   lastName: string;
+  enterpriseName: string;
+  domain: string;
   email: string;
   password: string;
+  terms?: boolean;
 }
 
 export interface SignInWithOAuthParams {
@@ -39,53 +29,38 @@ export interface ResetPasswordParams {
 
 export class AuthClient {
 
-  async signUp(client: SignUpParams): Promise<{ error?: any }> {
-    try {
-      const { token, user, website } = await AuthService.handleSignUpForm(client);
-      localStorage.setItem('custom-auth-token', token);
-      localStorage.setItem('custom-auth-user', JSON.stringify({...user, website }));
-      return {};
-    } catch (error: any) {
-      return { error };
-    }
+  async signUp(client: SignUpParams): Promise<{ error?: AxiosError }> {
+    const { token, user, website } = await AuthService.handleSignUpForm(client);
+    localStorage.setItem('custom-auth-token', token ?? '');
+    localStorage.setItem('custom-auth-user', JSON.stringify({...user, website }));
+    return { };
   }
 
-  async signInWithOAuth(_: SignInWithOAuthParams): Promise<{ url?: string, error?: any }> {
-    try {
-      const { url } = await AuthService.googleAuthRedirect();
-      return {url};
-    } catch (error) {
-      return { error };
-    }
+  async signInWithOAuth(_: SignInWithOAuthParams): Promise<{ url?: string, error?: AxiosError }> {
+    const { url } = await AuthService.googleAuthRedirect();
+    return {url};
   }
 
-  async handleTokenFormGoogle(code: string): Promise<{ token?: string, error?: any, user?: any }> {
-    try {
-      const { user, updatedWebsite, integration, verificationData, website } = await AuthService.handleAuthCallback(code);
-      localStorage.setItem('custom-auth-token', JSON.stringify({ token: {
-        accessToken: integration.accessToken,
-        refreshToken: integration.refreshToken,
-        expiresAt: integration.expiresAt
-      }}));
-      localStorage.setItem('custom-auth-user', JSON.stringify({...user, updatedWebsite, verificationData, website}));
-      return {  };
-    } catch (error) {
-      return { error };
-    }
+  async handleTokenFormGoogle(code: string): Promise<{ token?: string, error?: AxiosError, user?: User, updatedWebsite?: Website, integration?: Integration, verificationData?: VerificationData, website?: Website }> {
+    const { user, updatedWebsite, integration, verificationData, website } = await AuthService.handleAuthCallback(code);
+    localStorage.setItem('custom-auth-token', JSON.stringify({ token: {
+      accessToken: integration?.accessToken,
+      refreshToken: integration?.refreshToken,
+      expiresAt: integration?.expiresAt
+    }}));
+    localStorage.setItem('custom-auth-user', JSON.stringify({...user, updatedWebsite, verificationData, website}));
+    return {  };
   }
 
-  async signInWithPassword(params: SignInWithPasswordParams): Promise<{ error?: any }> {
-    try {
-      const { email, password } = params;
-      const { token, user } = await AuthService.handleSignIn({email,password});
-      localStorage.setItem('custom-auth-token', token);
-      localStorage.setItem('custom-auth-user', JSON.stringify(user));
-      return { };
-    } catch (error: any) {
-      console.log(error)
-      return { error };
+  async signInWithPassword(params: SignInWithPasswordParams): Promise<{ error?: AxiosError }> {
+    const { email, password } = params;
+    const { token, user, error } = await AuthService.handleSignIn({email,password});
+    if (error) {
+      throw error;
     }
-
+    localStorage.setItem('custom-auth-token', token ?? '');
+    localStorage.setItem('custom-auth-user', JSON.stringify(user));
+    return { };
   }
 
   async resetPassword(_: ResetPasswordParams): Promise<{ error?: string }> {
@@ -96,17 +71,22 @@ export class AuthClient {
     return { error: 'Update reset not implemented' };
   }
 
-  async getUser(): Promise<{ data?: User | null; error?: string }> {
+  async getUser(): Promise<{ data?: string | null, user?: User, error?: AxiosError }> {
     // Make API request
 
     // We do not handle the API, so just check if we have a token in localStorage.
     const token = localStorage.getItem('custom-auth-token');
+    const user: User | null = JSON.parse(localStorage.getItem('custom-auth-user') || 'null') as User;
 
     if (!token) {
       return { data: null };
     }
 
-    return { data: user };
+    if(!user) {
+      return { data: null };
+    }
+
+    return { data: token, user };
   }
 
   async signOut(): Promise<{ error?: string }> {

@@ -10,11 +10,11 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
 import { ListMagnifyingGlass as BagSimpleIcon } from '@phosphor-icons/react/dist/ssr/ListMagnifyingGlass';
-import { Image as ImageIcon } from '@phosphor-icons/react/dist/ssr/Image';
 
 import { DataTable } from '@/components/core/data-table';
 import type { ColumnDef } from '@/components/core/data-table';
 import { Skeleton } from '@mui/material';
+import type { QueryData } from '@/types/apis';
 
 export interface Queries {
   keys:        string[];
@@ -28,7 +28,7 @@ const columns = [
   {
     formatter: (row): React.JSX.Element => (
       <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-        
+
         <Box sx={{ whiteSpace: 'nowrap' }}>
           <Typography variant="subtitle2">{row.keys[0]}</Typography>
           {/* <Typography color="text.secondary" variant="body2">
@@ -108,7 +108,7 @@ const columns = [
 ] satisfies ColumnDef<Queries>[];
 
 export interface ProductsProps {
-  data: Queries[];
+  data: QueryData[];
   loader: boolean;
 }
 
@@ -130,8 +130,8 @@ export function TopProducts({ data, loader }: ProductsProps): React.JSX.Element 
       />
       <Box sx={{ overflowX: 'auto', '--mui-palette-TableCell-border': 'transparent' }}>
         {
-          loader 
-          ? ( 
+          loader
+          ? (
             <Box sx={{ padding: 5 }}>
               <Skeleton animation="wave" />
               <Skeleton animation="wave" />
@@ -147,8 +147,8 @@ export function TopProducts({ data, loader }: ProductsProps): React.JSX.Element 
                 <Skeleton animation="wave" width="40%" />
               </Box>
             </Box>
-          ) 
-          : ( <DataTable<Queries> columns={columns} hideHead rows={data} /> )
+          )
+          : ( <DataTable<QueryData> columns={columns as unknown as ColumnDef<QueryData>[]} hideHead rows={data} /> )
         }
       </Box>
     </Card>

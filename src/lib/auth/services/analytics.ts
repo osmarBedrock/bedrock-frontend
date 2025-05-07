@@ -1,19 +1,22 @@
 'use client';
 
+import type { AnalyticsResponse, PageSpeedInsightResponse, SearchConsoleResponse } from '@/types/apis';
 import api from './api';
+import type { AxiosResponse } from 'axios';
+import type { AnalyticsRequest, PageSpeedInsightRequest, SearchConsoleRequest } from '@/types/analytics';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8081/api';
+const API_URL: string = import.meta.env.VITE_BACKEND_URL as string || 'http://localhost:8081/api';
 
 // Sistema de caché mejorado
 const cache = {
-  responses: new Map<string, { data: any; timestamp: number }>(), // Respuestas completadas
-  pending: new Map<string, Promise<any>>() // Peticiones en curso
+  responses: new Map<string, { data: AnalyticsResponse | SearchConsoleResponse | PageSpeedInsightResponse; timestamp: number }>(), // Respuestas completadas
+  pending: new Map<string, Promise<AnalyticsResponse | SearchConsoleResponse | PageSpeedInsightResponse>>() // Peticiones en curso
 };
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutos de vida en caché
 
 // Generación de clave de caché consistente
-const getCacheKey = (endpoint: string, params: any): string => {
+const getCacheKey = (endpoint: string, params: AnalyticsRequest | SearchConsoleRequest | PageSpeedInsightRequest): string => {
   const keyStrategies = {
     analytics: ['range'], // Solo usa 'range' como clave
     searchConsole: ['range', 'siteUrl'],
@@ -26,41 +29,37 @@ const getCacheKey = (endpoint: string, params: any): string => {
 
   return `${service}-${
     keyStrategies[service]
-      .filter(field => params[field] !== undefined)
-      .map(field => `${field}:${JSON.stringify(params[field])}`)
+      .filter((field: string) => params[field as keyof typeof params])
+      .map((field: string) => `${field}:${JSON.stringify(params[field as keyof typeof params])}`)
       .join('|')
   }`;
 };
 
 // Núcleo del sistema de caché mejorado
-const executeRequest = async <T>(endpoint: string, params: any): Promise<T> => {
+const executeRequest = async <T>(endpoint: string, params: AnalyticsRequest | SearchConsoleRequest | PageSpeedInsightRequest): Promise<T> => {
   const key = getCacheKey(endpoint, params);
   const url = `${API_URL}/${endpoint}`;
 
   // 1. Verificar respuesta en caché (válida)
   const cachedResponse = cache.responses.get(key);
   if (cachedResponse && (Date.now() - cachedResponse.timestamp < CACHE_TTL)) {
-    console.log('[Cache Hit]', key);
-    return cachedResponse.data;
+    return cachedResponse.data as T;
   }
 
   // 2. Verificar si ya hay una solicitud pendiente para esta clave
   if (cache.pending.has(key)) {
-    console.log('[Reusing Pending Request]', key);
-    return cache.pending.get(key);
+    return cache.pending.get(key) as Promise<T>;
   }
 
   try {
-    // 3. Configurar token
-    params.googleToken = params.googleToken || JSON.parse(localStorage.getItem('refresh-token') || 'null');
 
     // 4. Crear y almacenar la promesa de la solicitud
-    const requestPromise = api.post(url, params)
-      .then(response => {
+    const requestPromise: Promise<T> = api.post(url, params)
+      .then((response: AxiosResponse<T>) => {
         // Almacenar en caché solo si la respuesta es exitosa
         if (response.status >= 200 && response.status < 300) {
           cache.responses.set(key, {
-            data: response.data,
+            data: response.data as AnalyticsResponse | SearchConsoleResponse | PageSpeedInsightResponse,
             timestamp: Date.now()
           });
         }
@@ -72,9 +71,8 @@ const executeRequest = async <T>(endpoint: string, params: any): Promise<T> => {
       });
 
     // Registrar la solicitud pendiente
-    cache.pending.set(key, requestPromise);
+    cache.pending.set(key, requestPromise as Promise<AnalyticsResponse | SearchConsoleResponse | PageSpeedInsightResponse>);
 
-    console.log('[API Request]', url, 'Key:', key);
     return await requestPromise;
   } catch (error) {
     // Asegurarse de limpiar la solicitud pendiente en caso de error
@@ -85,19 +83,18 @@ const executeRequest = async <T>(endpoint: string, params: any): Promise<T> => {
 
 export const AnalyticsService = {
   handleAnalyticsRequest: (params: AnalyticsRequest) =>
-    executeRequest('google/analytics', params),
+    executeRequest<AnalyticsResponse>('google/analytics', params),
 
   handleSearchConsoleRequest: (params: SearchConsoleRequest) =>
-    executeRequest('google/searchConsole', params),
+    executeRequest<SearchConsoleResponse>('google/searchConsole', params),
 
   handlePageSpeedInsightsRequest: (params: PageSpeedInsightRequest) =>
-    executeRequest('google/pageSpeed', params),
+    executeRequest<PageSpeedInsightResponse>('google/pageSpeed', params),
 
   // Herramientas para desarrollo
   clearCache: () => {
     cache.responses.clear();
     cache.pending.clear();
-    console.log('[Cache Cleared]');
   },
 
   getCacheState: () => ({

@@ -5,19 +5,13 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import Rating from '@mui/material/Rating';
 import Stack from '@mui/material/Stack';
 
-import type { User } from '@/types/user';
-
-const user = {
-  id: 'USR-000',
-  name: 'Sofia Rivers',
-  avatar: '/assets/avatar.png',
-  email: 'sofia@devias.io',
-} satisfies User;
+import { useUser } from '@/hooks/use-user';
 
 export function CompanyReviewAdd(): React.JSX.Element {
+  const { user } = useUser();
   return (
     <Stack direction="row" spacing={2} sx={{ alignItems: 'flex-start' }}>
-      <Avatar src={user.avatar} />
+      <Avatar src={user?.avatar ?? ''} />
       <Stack spacing={3} sx={{ flex: '1 1 auto' }}>
         <OutlinedInput multiline placeholder="Send your review" rows={3} />
         <Stack

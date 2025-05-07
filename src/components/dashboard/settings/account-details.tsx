@@ -27,7 +27,7 @@ import { useUser } from '@/hooks/use-user';
 import Typography from '@mui/material/Typography';
 
 export interface AccountProps {
-  user: User | undefined
+  user: User | null | undefined
   updateFunction: (e: User) => void
 }
 
@@ -55,7 +55,7 @@ export function AccountDetails({user, updateFunction}: AccountProps): React.JSX.
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
     enterpriseName: user?.enterpriseName || '',
-    domain: user?.website?.domain || '',
+    domain: user?.websites?.[0]?.domain || '',
     id: user?.id
   };
 
@@ -78,7 +78,7 @@ export function AccountDetails({user, updateFunction}: AccountProps): React.JSX.
         }
       } catch (error) {
         setError('root', { type: 'server', message: String(error) });
-        console.error('Error signing in:', error);
+        throw error;
       }
       // Refresh the auth state
       await checkSession?.();
@@ -88,32 +88,33 @@ export function AccountDetails({user, updateFunction}: AccountProps): React.JSX.
 
   React.useEffect(() => {
     setCode((searchParams.get('code') ?? ''));
-    if(code) handleSignIn();
+    if(code) void handleSignIn();
     void trigger(['enterpriseName', 'domain']);
   }, [trigger, code]);
 
   const [_, setSelectedImage] = React.useState<File | null>(null);
-  const [imagePreview, setImagePreview] = React.useState<string>(user?.avatar || '/assets/avatar.png');
+  const [imagePreview, setImagePreview] = React.useState<string>(user?.avatar || '/assets/placeholder-person-image.png');
 
   const onSubmit = (data: Values) => {
     if (isDirty) {
-      const userData: User = {
-        ...user,
+      const updatedUser: User = {
+        ...user!,
         ...data,
-        website: {
-          ...user?.website,
-          domain: data.domain,
-        },
       };
-      updateFunction(userData);
-    } else {
-      alert('No changes detected.');
+      if(updatedUser.websites?.[0]) {
+        updatedUser.websites[0].domain = data.domain;
+      }
+      if(data.domain) {
+        updatedUser.website!.domain = data.domain;
+      }
+
+      updateFunction(updatedUser);
     }
   };
 
   const handleRemoveImage = () => {
     setSelectedImage(null);
-    setImagePreview('/assets/avatar.png'); // Restablecer a la imagen por defecto
+    setImagePreview('/assets/placeholder-person-image.png'); // Restablecer a la imagen por defecto
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -146,65 +147,66 @@ export function AccountDetails({user, updateFunction}: AccountProps): React.JSX.
         <CardContent>
 
           <Stack spacing={3}>
-            <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-              <Box
-                sx={{
-                  border: '1px dashed var(--mui-palette-divider)',
-                  borderRadius: '50%',
-                  display: 'inline-flex',
-                  p: '4px',
-                }}
-              >
-                <Box sx={{ borderRadius: 'inherit', position: 'relative' }}>
-                  <Box
-                    sx={{
-                      alignItems: 'center',
-                      bgcolor: 'rgba(0, 0, 0, 0.5)',
-                      borderRadius: 'inherit',
-                      bottom: 0,
-                      color: 'var(--mui-palette-common-white)',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      left: 0,
-                      opacity: 0,
-                      position: 'absolute',
-                      right: 0,
-                      top: 0,
-                      zIndex: 1,
-                      '&:hover': { opacity: 1 },
-                    }}
-                  >
-                    <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
-                      <CameraIcon fontSize="var(--icon-fontSize-md)" />
-                    </Stack>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      onChange={handleImageChange}
-                      id="avatar-upload"
-                    />
-                    <label htmlFor="avatar-upload" style={{ cursor: 'pointer' }}>
-                      Select
-                    </label>
-                  </Box>
-                  <Avatar src={imagePreview} sx={{ '--Avatar-size': '100px' }} />
+
+          <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+            <Box
+              sx={{
+                border: '1px dashed var(--mui-palette-divider)',
+                borderRadius: '50%',
+                display: 'inline-flex',
+                p: '4px',
+              }}
+            >
+              <Box sx={{ borderRadius: 'inherit', position: 'relative' }}>
+                <Box
+                  sx={{
+                    alignItems: 'center',
+                    bgcolor: 'rgba(0, 0, 0, 0.5)',
+                    borderRadius: 'inherit',
+                    bottom: 0,
+                    color: 'var(--mui-palette-common-white)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    left: 0,
+                    opacity: 0,
+                    position: 'absolute',
+                    right: 0,
+                    top: 0,
+                    zIndex: 1,
+                    '&:hover': { opacity: 1 },
+                  }}
+                >
+                  <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                    <CameraIcon fontSize="var(--icon-fontSize-md)" />
+                  </Stack>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    onChange={handleImageChange}
+                    id="avatar-upload"
+                  />
+                  <label htmlFor="avatar-upload" style={{ cursor: 'pointer' }}>
+                    Select
+                  </label>
                 </Box>
+                <Avatar src={imagePreview} sx={{ '--Avatar-size': '100px' }} />
               </Box>
-              <Button color="secondary" size="small" onClick={handleRemoveImage}>
-                Remove
-              </Button>
-            </Stack>
+            </Box>
+            <Button color="secondary" size="small" onClick={handleRemoveImage}>
+              Remove
+            </Button>
+          </Stack>
             <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
               {
-                !user?.website?.domain &&
+                !user?.websites?.[0]?.domain &&
                 <Typography gutterBottom variant="h5" component="div" sx={{ color: 'var(--mui-palette-error-main)' }}>
                   It is necessary to capture the domain of your company to access the dashboard.
                 </Typography>
               }
               {
-                !user?.website?.googleAccessToken &&
+                !user?.websites?.[0]?.googleAccessToken &&
                 <Typography gutterBottom variant="h5" component="div" sx={{ color: 'var(--mui-palette-error-main)' }}>
                   It is necessary to grant access to your Google account to access the dashboard.
                 </Typography>
