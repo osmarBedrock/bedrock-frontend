@@ -29,19 +29,54 @@ export function UserProvider({ children }: UserProviderProps): React.JSX.Element
     const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
       logger.debug('[Auth] onAuthStateChanged:', user);
 
-      setState((prev) => ({
-        ...prev,
-        user: user
-          ? ({
-              id: user.uid,
-              email: user.email ?? undefined,
-              name: user.displayName ?? undefined,
-              avatar: user.photoURL ?? undefined,
-            } satisfies User)
-          : null,
-        error: null,
-        isLoading: false,
-      }));
+      if (!user) {
+        setState((prev) => ({
+          ...prev,
+          user: null,
+          error: null,
+          isLoading: false
+        }));
+        return;
+      }
+
+      const userData: User = {
+        id: Number(user.uid),
+        email: user.email || '',
+        firstName: (user.displayName) || '',
+        lastName: (user.displayName) || '',
+        avatar: (user.photoURL) || '',
+        passwordHash: '',
+        googleId: null,
+        emailVerified: user.emailVerified || false,
+        planType: '',
+        stripeCustomerId: null,
+        currentPeriodEnd: null,
+        isProfileComplete: false,
+        enterpriseName: '',
+        enterprisePicture: null,
+        verificationData: {
+          dnsRecord: '',
+          verificationUrl: ''
+        },
+        websites: [],
+        website: {
+          id: 0,
+          domain: '',
+          propertyId: '',
+          verificationCode: '',
+          isVerified: false,
+          userId: 0,
+          googleAccessToken: '',
+          googleRefreshToken: '',
+          semrushApiKey: null,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      };
+
+
+      setState((prev) => ({ ...prev, user: userData, error: null, isLoading: false }));
+
     });
 
     return () => {

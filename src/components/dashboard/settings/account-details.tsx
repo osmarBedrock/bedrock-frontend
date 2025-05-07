@@ -10,74 +10,122 @@ import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import FormControl from '@mui/material/FormControl';
 import FormHelperText from '@mui/material/FormHelperText';
-import InputAdornment from '@mui/material/InputAdornment';
 import InputLabel from '@mui/material/InputLabel';
 import Link from '@mui/material/Link';
 import OutlinedInput from '@mui/material/OutlinedInput';
-import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
 import { Camera as CameraIcon } from '@phosphor-icons/react/dist/ssr/Camera';
 import { User as UserIcon } from '@phosphor-icons/react/dist/ssr/User';
 
-import { Option } from '@/components/core/option';
-import { UserData } from '@/hooks/use-client';
+import { Controller, useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z as zod } from 'zod';
+import type { User } from '@/types/user';
+import { useSearchParams } from 'react-router-dom';
+import { authClient } from '@/lib/auth/custom/client';
+import { useUser } from '@/hooks/use-user';
+import Typography from '@mui/material/Typography';
 
 export interface AccountProps {
-  user: UserData | undefined
-  updateFunction: (e: UserData) => void
+  user: User | null | undefined
+  updateFunction: (e: User) => void
 }
 
 export function AccountDetails({user, updateFunction}: AccountProps): React.JSX.Element {
-  
+  const [ searchParams ] = useSearchParams();
+  const [ code, setCode ] = React.useState<string | null>(null);
+  const { checkSession } = useUser();
+
+  const schema = zod.object({
+    firstName: zod.string().min(1, { message: 'First name is required' }),
+    lastName: zod.string().min(1, { message: 'Last name is required' }),
+    enterpriseName: zod.string().refine(
+      (val) => initialValues.enterpriseName !== '' || val.trim() !== '',
+      { message: 'Enterprise name is required to complete registration' }
+    ),
+    domain: zod.string().refine(
+      (val) => initialValues.domain !== '' || val.trim() !== '',
+      { message: 'Enterprise domain is required to access the dashboard' }
+    ),
+  });
+
+  type Values = zod.infer<typeof schema>;
+
   const initialValues = {
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
+    enterpriseName: user?.enterpriseName || '',
+    domain: user?.websites?.[0]?.domain || '',
     id: user?.id
   };
 
-  const [formData, setFormData] = React.useState(initialValues);
-  const [selectedImage, setSelectedImage] = React.useState<File | null>(null);
-  const [imagePreview, setImagePreview] = React.useState<string>(user?.avatarUrl || '/assets/avatar.png');
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors, isDirty },
+    trigger,
+  } = useForm<Values>({ defaultValues: initialValues, resolver: zodResolver(schema) });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string | undefined; value: unknown }>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name as string]: value,
-    });
-  };
+  const handleSignIn = React.useCallback(
+    async (): Promise<void> => {
+      try {
+        const { error } = await authClient.handleTokenFormGoogle(code ?? '');
 
-  const hasChanges = () => {
-    return (
-      formData?.firstName !== initialValues?.firstName ||
-      formData?.lastName !== initialValues?.lastName 
-    );
-  };
+        if (error) {
+          setError('root', { type: 'server', message: String(error) });
+          return;
+        }
+      } catch (error) {
+        setError('root', { type: 'server', message: String(error) });
+        throw error;
+      }
+      // Refresh the auth state
+      await checkSession?.();
+    },
+    [checkSession, setError, code]
+  );
 
-  const handleSubmit = () => {
-    if (hasChanges()) {
-      console.log('Form data submitted:', formData);
-      updateFunction(formData)
-    } else {
-      alert('No changes detected.');
+  React.useEffect(() => {
+    setCode((searchParams.get('code') ?? ''));
+    if(code) void handleSignIn();
+    void trigger(['enterpriseName', 'domain']);
+  }, [trigger, code]);
+
+  const [_, setSelectedImage] = React.useState<File | null>(null);
+  const [imagePreview, setImagePreview] = React.useState<string>(user?.avatar || '/assets/placeholder-person-image.png');
+
+  const onSubmit = (data: Values) => {
+    if (isDirty) {
+      const updatedUser: User = {
+        ...user!,
+        ...data,
+      };
+      if(updatedUser.websites?.[0]) {
+        updatedUser.websites[0].domain = data.domain;
+      }
+      if(data.domain) {
+        updatedUser.website!.domain = data.domain;
+      }
+
+      updateFunction(updatedUser);
     }
   };
 
   const handleRemoveImage = () => {
     setSelectedImage(null);
-    setImagePreview('/assets/avatar.png'); // Restablecer a la imagen por defecto
+    setImagePreview('/assets/placeholder-person-image.png'); // Restablecer a la imagen por defecto
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
+    if (e?.target?.files?.[0]) {
       const file = e.target.files[0];
       setSelectedImage(file);
 
       // Mostrar la vista previa de la imagen
       const reader = new FileReader();
       reader.onload = (event) => {
-        if (event.target?.result) {
+        if (event?.target?.result) {
           setImagePreview(event.target.result as string);
         }
       };
@@ -95,8 +143,11 @@ export function AccountDetails({user, updateFunction}: AccountProps): React.JSX.
         }
         title="Basic details"
       />
-      <CardContent>
-        <Stack spacing={3}>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <CardContent>
+
+          <Stack spacing={3}>
+
           <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
             <Box
               sx={{
@@ -128,9 +179,6 @@ export function AccountDetails({user, updateFunction}: AccountProps): React.JSX.
                 >
                   <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
                     <CameraIcon fontSize="var(--icon-fontSize-md)" />
-                    <Typography color="inherit" variant="subtitle2">
-                      Select
-                    </Typography>
                   </Stack>
                   <input
                     type="file"
@@ -150,79 +198,130 @@ export function AccountDetails({user, updateFunction}: AccountProps): React.JSX.
               Remove
             </Button>
           </Stack>
-          <form>
-            <Stack spacing={2}>
-              <FormControl disabled>
-                <InputLabel>Full name</InputLabel>
-                <OutlinedInput value={user?.name} name="fullName" />
-              </FormControl>
-              <Stack direction="row" spacing={2}>
-                <FormControl sx={{ flex: '1 1 auto' }}>
-                  <InputLabel>first Name</InputLabel>
-                  <OutlinedInput name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    placeholder={user?.firstName} />
-                </FormControl>
-                <FormControl sx={{ flex: '1 1 auto' }}>
-                  <InputLabel>Last Name</InputLabel>
-                  <OutlinedInput name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    placeholder={user?.lastName}/>
-                </FormControl>
-              </Stack>
-              <FormControl disabled>
-                <InputLabel>Email address</InputLabel>
-                <OutlinedInput name="email" type="email" value={user?.email} />
-                <FormHelperText>
-                  Please <Link variant="inherit">contact us</Link> to change your email
-                </FormHelperText>
-              </FormControl>
-              {/* <Stack direction="row" spacing={2}>
-                <FormControl sx={{ width: '160px' }}>
-                  <InputLabel>Dial code</InputLabel>
-                  <Select
-                    name="countryCode"
-                    startAdornment={
-                      <InputAdornment position="start">
-                        <Box
-                          alt="Spain"
-                          component="img"
-                          src="/assets/flag-es.svg"
-                          sx={{ display: 'block', height: '20px', width: 'auto' }}
-                        />
-                      </InputAdornment>
-                    }
-                    value="+34"
-                  >
-                    <Option value="+1">United States</Option>
-                    <Option value="+49">Germany</Option>
-                    <Option value="+34">Spain</Option>
-                  </Select>
-                </FormControl>
-                <FormControl sx={{ flex: '1 1 auto' }}>
-                  <InputLabel>Phone number</InputLabel>
-                  <OutlinedInput defaultValue="965 245 7623" name="phone" />
-                </FormControl>
-              </Stack> */}
-              {/* <FormControl>
-                <InputLabel>Title</InputLabel>
-                <OutlinedInput name="title" placeholder="e.g Golang Developer" />
-              </FormControl>
-              <FormControl>
-                <InputLabel>Biography (optional)</InputLabel>
-                <OutlinedInput name="bio" placeholder="Describe yourself..." />
-                <FormHelperText>0/200 characters</FormHelperText>
-              </FormControl> */}
+            <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+              {
+                !user?.websites?.[0]?.domain &&
+                <Typography gutterBottom variant="h5" component="div" sx={{ color: 'var(--mui-palette-error-main)' }}>
+                  It is necessary to capture the domain of your company to access the dashboard.
+                </Typography>
+              }
+              {
+                !user?.websites?.[0]?.googleAccessToken &&
+                <Typography gutterBottom variant="h5" component="div" sx={{ color: 'var(--mui-palette-error-main)' }}>
+                  It is necessary to grant access to your Google account to access the dashboard.
+                </Typography>
+              }
             </Stack>
-          </form>
-        </Stack>
-      </CardContent>
-      <CardActions sx={{ justifyContent: 'flex-end' }}>
-        <Button color="secondary">Cancel</Button>
-        <Button variant="contained" onClick={handleSubmit} disabled={!hasChanges()}>Save changes</Button>
-      </CardActions>
+              <Stack spacing={2}>
+                <Stack direction="row" spacing={2}>
+                  <Controller
+                    control={control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormControl sx={{ flex: '1 1 auto' }} error={Boolean(errors.firstName)}>
+                        <InputLabel>First Name</InputLabel>
+                        <OutlinedInput name="firstName"
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="This is your name" />
+                      </FormControl>
+                    )}
+                  />
+                  <Controller
+                    control={control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormControl sx={{ flex: '1 1 auto' }} error={Boolean(errors.lastName)}>
+                        <InputLabel>Last Name</InputLabel>
+                        <OutlinedInput name="lastName"
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="This is your last name" />
+                      </FormControl>
+                    )}
+                  />
+                </Stack>
+                <Stack direction="row" spacing={2}>
+                  <Controller
+                    control={control}
+                    name="enterpriseName"
+                    render={({ field }) => (
+                      <FormControl sx={{ flex: '1 1 auto' }} error={Boolean(errors.enterpriseName) || (initialValues.enterpriseName.length === 0 && !isDirty)}>
+                        <InputLabel>Enterprise name</InputLabel>
+                        <OutlinedInput name="enterpriseName"
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="This is the name of your enterprise" />
+                          { errors.enterpriseName && ( <FormHelperText error >{errors.enterpriseName.message}</FormHelperText> ) }
+                      </FormControl>
+                    )}
+                  />
+                  <Controller
+                    control={control}
+                    name="domain"
+                    render={({ field }) => (
+                      <FormControl sx={{ flex: '1 1 auto' }} error={Boolean(errors.domain) || (initialValues.domain.length === 0 && !isDirty)}>
+                        <InputLabel>Domain</InputLabel>
+                        <OutlinedInput name="domain"
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="This is the domain of your enterprise" />
+                          { errors.domain && ( <FormHelperText error>{errors.domain.message}</FormHelperText> ) }
+                      </FormControl>
+                    )}
+                  />
+                </Stack>
+                <FormControl disabled>
+                  <InputLabel>Email address</InputLabel>
+                  <OutlinedInput name="email" type="email" value={user?.email} />
+                  <FormHelperText>
+                    Please <Link variant="inherit">contact us</Link> to change your email
+                  </FormHelperText>
+                </FormControl>
+                {/* <Stack direction="row" spacing={2}>
+                  <FormControl sx={{ width: '160px' }}>
+                    <InputLabel>Dial code</InputLabel>
+                    <Select
+                      name="countryCode"
+                      startAdornment={
+                        <InputAdornment position="start">
+                          <Box
+                            alt="Spain"
+                            component="img"
+                            src="/assets/flag-es.svg"
+                            sx={{ display: 'block', height: '20px', width: 'auto' }}
+                          />
+                        </InputAdornment>
+                      }
+                      value="+34"
+                    >
+                      <Option value="+1">United States</Option>
+                      <Option value="+49">Germany</Option>
+                      <Option value="+34">Spain</Option>
+                    </Select>
+                  </FormControl>
+                  <FormControl sx={{ flex: '1 1 auto' }}>
+                    <InputLabel>Phone number</InputLabel>
+                    <OutlinedInput defaultValue="965 245 7623" name="phone" />
+                  </FormControl>
+                </Stack> */}
+                {/* <FormControl>
+                  <InputLabel>Title</InputLabel>
+                  <OutlinedInput name="title" placeholder="e.g Golang Developer" />
+                </FormControl>
+                <FormControl>
+                  <InputLabel>Biography (optional)</InputLabel>
+                  <OutlinedInput name="bio" placeholder="Describe yourself..." />
+                  <FormHelperText>0/200 characters</FormHelperText>
+                </FormControl> */}
+              </Stack>
+          </Stack>
+        </CardContent>
+        <CardActions sx={{ justifyContent: 'flex-end' }}>
+          <Button color="secondary">Cancel</Button>
+          <Button variant="contained" type="submit" disabled={!isDirty}>Save changes</Button>
+        </CardActions>
+      </form>
     </Card>
   );
 }

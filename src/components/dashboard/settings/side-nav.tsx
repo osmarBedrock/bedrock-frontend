@@ -32,20 +32,20 @@ const navItems = [
       { key: 'security', title: 'Security', href: paths.dashboard.settings.security, icon: 'lock-key' },
     ],
   },
-  // {
-  //   key: 'organization',
-  //   title: 'Organization',
-  //   items: [
-  //     { key: 'billing', title: 'Billing & plans', href: paths.dashboard.settings.billing, icon: 'credit-card' },
-  //     { key: 'team', title: 'Team', href: paths.dashboard.settings.team, icon: 'users-three' },
-  //     {
-  //       key: 'integrations',
-  //       title: 'Integrations',
-  //       href: paths.dashboard.settings.integrations,
-  //       icon: 'plugs-connected',
-  //     },
-  //   ],
-  // },
+  {
+    key: 'organization',
+    title: 'Organization',
+    items: [
+      { key: 'billing', title: 'Billing & plans', href: paths.dashboard.settings.billing, icon: 'credit-card' },
+      // { key: 'team', title: 'Team', href: paths.dashboard.settings.team, icon: 'users-three' },
+      // {
+      //   key: 'integrations',
+      //   title: 'Integrations',
+      //   href: paths.dashboard.settings.integrations,
+      //   icon: 'plugs-connected',
+      // },
+    ],
+  },
 ] satisfies NavItemConfig[];
 
 const icons = {
@@ -60,7 +60,7 @@ const icons = {
 export function SideNav(): React.JSX.Element {
   const pathname = usePathname();
   const {user} = useClient();
-  
+
   return (
     <div>
       <Stack
@@ -92,9 +92,9 @@ export function SideNav(): React.JSX.Element {
           ))}
         </Stack>
         <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-          <Avatar src={ user?.avatarUrl || "/assets/avatar.png" }>AV</Avatar>
+          <Avatar src={ user?.avatar || "/assets/placeholder-person-image.png" }>AV</Avatar>
           <div>
-            <Typography variant="subtitle1">{user?.name}</Typography>
+            <Typography variant="subtitle1">{user?.firstName} {user?.lastName}</Typography>
             <Typography color="text.secondary" variant="caption">
               {user?.email}
             </Typography>

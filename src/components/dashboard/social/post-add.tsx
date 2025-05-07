@@ -12,21 +12,16 @@ import { Paperclip as PaperclipIcon } from '@phosphor-icons/react/dist/ssr/Paper
 import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { Smiley as SmileyIcon } from '@phosphor-icons/react/dist/ssr/Smiley';
 
-import type { User } from '@/types/user';
+import { useUser } from '@/hooks/use-user';
 
-const user = {
-  id: 'USR-000',
-  name: 'Sofia Rivers',
-  avatar: '/assets/avatar.png',
-  email: 'sofia@devias.io',
-} satisfies User;
 
 export function PostAdd(): React.JSX.Element {
+  const { user } = useUser();
   return (
     <Card>
       <CardContent>
         <Stack direction="row" spacing={2} sx={{ alignItems: 'flex-start' }}>
-          <Avatar src={user.avatar} />
+          <Avatar src={user?.avatar ?? ''} />
           <Stack spacing={3} sx={{ flex: '1 1 auto' }}>
             <OutlinedInput multiline placeholder="What's on your mind" rows={3} />
             <Stack direction="row" spacing={3} sx={{ alignItems: 'center', justifyContent: 'space-between' }}>

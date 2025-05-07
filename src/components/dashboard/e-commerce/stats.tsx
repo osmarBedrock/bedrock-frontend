@@ -7,7 +7,6 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
-import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { Icon } from '@phosphor-icons/react/dist/lib/types';
@@ -15,15 +14,16 @@ import { CursorClick as CursorClickIcon } from '@phosphor-icons/react/dist/ssr/C
 import { LegoSmiley as LegoSmileyIcon } from '@phosphor-icons/react/dist/ssr/LegoSmiley';
 import { Waveform as WaveformIcon } from '@phosphor-icons/react/dist/ssr/Waveform';
 import { HandArrowUp as HandArrowUpIcon } from '@phosphor-icons/react/dist/ssr/HandArrowUp';
-import { CartesianGrid, Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { CartesianGrid, Area, AreaChart, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
 
-import { NoSsr } from '@/components/core/no-ssr';
-import { getDataKeySEO, tooltipFormatterSEO } from '@/utils/analytics';
-import { SetURLSearchParams } from 'react-router-dom';
+import { tooltipFormatterSEO } from '@/utils/analytics';
+import type{ SetURLSearchParams } from 'react-router-dom';
 import { Skeleton } from '@mui/material';
+import type { Metric } from '@/types/analytics';
+import type { QueryData } from '@/types/apis';
 
 export interface StatsProps {
-  data: { name: string; v1: number; v2: number }[];
+  data: QueryData[];
   totalClicks: number;
   totalImpressions: number;
   averageCTR: number;
@@ -33,7 +33,7 @@ export interface StatsProps {
   loader: boolean;
 }
 
-let statButtons = [
+const statButtons = [
   {
     icon: CursorClickIcon ,
     title: 'Total Clicks',
@@ -62,13 +62,13 @@ let statButtons = [
 
 export function Stats({ data, totalClicks , totalImpressions , averageCTR , averagePosition, setParams, params, loader }: StatsProps): React.JSX.Element {
   const chartHeight = 320;
-  const metric: any = params.get('metric') ?? 'impressions';
+  const metric: Metric = params.get('metric') as Metric;
 
   statButtons[0].value = totalClicks;
   statButtons[1].value = totalImpressions;
   statButtons[2].value = averageCTR;
   statButtons[3].value = averagePosition;
-  
+
 
   return (
     <Card>
@@ -81,17 +81,17 @@ export function Stats({ data, totalClicks , totalImpressions , averageCTR , aver
             spacing={3}
             sx={{ justifyContent: 'space-between' }}
           >
-            { loader 
+            { loader
             ?
-              statButtons.map(()=> <SummaryFailed />)
+              statButtons.map((_, index)=> <SummaryFailed key={index as unknown as number} />)
             :
               statButtons.map((statButton)=>
-                <Summary icon={statButton?.icon} title={statButton?.title} key={statButton.key} value={statButton.value} metric={statButton.key} setParams={setParams} params={params} />
+                <Summary icon={statButton?.icon} title={statButton?.title} key={statButton.key} value={statButton.value} metric={statButton.key as Metric} setParams={setParams} params={params} />
               )
             }
           </Stack>
-                  {loader ? 
-                  (<Skeleton variant="rounded" width="100%" animation="wave" height={chartHeight}/>) 
+                  {loader ?
+                  (<Skeleton variant="rounded" width="100%" animation="wave" height={chartHeight}/>)
           :
           <ResponsiveContainer width="100%" height={chartHeight}>
               <AreaChart data={data}>
@@ -123,7 +123,7 @@ export function Stats({ data, totalClicks , totalImpressions , averageCTR , aver
                     fill: "#FFFFFF",
                     r: 4,
                   }}
-                  dataKey={getDataKeySEO(metric)}
+                  dataKey={metric}
                   fill="url(#gradientFill)"
                 />
               </AreaChart>
@@ -138,7 +138,7 @@ export function Stats({ data, totalClicks , totalImpressions , averageCTR , aver
 interface SummaryProps {
   icon: Icon;
   title: string;
-  metric: string;
+  metric: Metric;
   value: number;
   setParams: SetURLSearchParams;
   params: URLSearchParams;
@@ -146,10 +146,10 @@ interface SummaryProps {
 
 function Summary({ icon: Icon, title, value, setParams, metric, params }: SummaryProps): React.JSX.Element {
   const isMyMetric = (params.get('metric') ?? 'impressions') === metric;
-  const handleClick = () => {
-    setParams((params: any) => {
-      params.set("metric", metric);
-      return params;
+  const handleClick = (): void => {
+    setParams((searchParams: URLSearchParams) => {
+      searchParams.set("metric", metric);
+      return searchParams;
     });
   }
   return (
@@ -180,7 +180,7 @@ function Summary({ icon: Icon, title, value, setParams, metric, params }: Summar
 }
 
 function SummaryFailed(): React.JSX.Element {
-  
+
   return (
     <Stack direction="row" spacing={2} sx={{ alignItems: 'center', cursor: 'pointer', padding: '8px', borderRadius: '10px', width: '100%' }}>
       <Skeleton variant="circular" width={70} height={70} />
@@ -196,22 +196,6 @@ function SummaryFailed(): React.JSX.Element {
   );
 }
 
-interface DotProps {
-  hover?: boolean;
-  active?: string;
-  cx?: number;
-  cy?: number;
-  payload?: { name: string };
-  stroke?: string;
-}
-
-function Dot({ active, cx, cy, payload, stroke }: DotProps): React.JSX.Element | null {
-  if (active && payload?.name === active) {
-    return <circle cx={cx} cy={cy} fill={stroke} r={6} />;
-  }
-
-  return null;
-}
 
 function Legend(): React.JSX.Element {
   return (
@@ -225,42 +209,5 @@ function Legend(): React.JSX.Element {
         </Stack>
       ))} */}
     </Stack>
-  );
-}
-interface TooltipContentProps {
-  active?: boolean;
-  payload?: { name: string; dataKey: string; value: number; stroke: string }[];
-  label?: string;
-}
-
-function TooltipContent({ active, payload }: TooltipContentProps): React.JSX.Element | null {
-  if (!active) {
-    return null;
-  }
-
-  return (
-    <Paper sx={{ border: '1px solid var(--mui-palette-divider)', boxShadow: 'var(--mui-shadows-16)', p: 1 }}>
-      <Stack spacing={2}>
-        {payload?.map(
-          (entry, index): React.JSX.Element => (
-            <Stack direction="row" key={entry.name} spacing={3} sx={{ alignItems: 'center' }}>
-              <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flex: '1 1 auto' }}>
-                <Box sx={{ bgcolor: entry.stroke, borderRadius: '2px', height: '8px', width: '8px' }} />
-                <Typography sx={{ whiteSpace: 'nowrap' }}>{entry.name}</Typography>
-              </Stack>
-              <Typography color="text.secondary" variant="body2">
-                {index === 0
-                  ? entry.value
-                  : new Intl.NumberFormat('en-US', {
-                      style: 'currency',
-                      currency: 'USD',
-                      maximumFractionDigits: 0,
-                    }).format(entry.value)}
-              </Typography>
-            </Stack>
-          )
-        )}
-      </Stack>
-    </Paper>
   );
 }

@@ -1,40 +1,36 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid2';
+import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { Helmet } from 'react-helmet-async';
+import { useSearchParams } from 'react-router-dom';
 
 import type { Metadata } from '@/types/metadata';
 import { config } from '@/config';
 import { CountrySessionsVsBounce } from '@/components/dashboard/analytics/country-sessions-vs-bounce-rate';
-import { Devices } from '@/components/dashboard/analytics/devices';
-import { InboundOutbound } from '@/components/dashboard/analytics/inbound-outbound';
-import { Insight } from '@/components/dashboard/analytics/insight';
 import { Summary } from '@/components/dashboard/analytics/summary';
 import { RangeButton } from '@/components/dashboard/analytics/range-button';
-import { useSearchParams } from 'react-router-dom';
 import type { Range } from '@/types/analytics';
 import { useAnalytics } from '@/hooks/use-analytics';
-import { AppLimits } from '@/components/dashboard/overview/app-limits';
 import { PerformanceChartCard } from '@/components/dashboard/overview/pie-chart-performance';
 
-const metadata = { title: `Analytics | Dashboard | ${config.site.name}` } satisfies Metadata;
+const metadata: Metadata = {
+  title: `Analytics | Dashboard | ${config.site.name}`,
+};
 
 export function Page(): React.JSX.Element {
   const [params, setParams] = useSearchParams();
   const [range, setRange] = React.useState<Range>('week');
 
-  const { 
+  const {
     averageBounceRate,
     averageDuration,
-    data, 
+    data,
     fetchAnalyticsData,
     loaderData,
-    loaderSessionData,
     metric,
     refreshData,
-    sessionData,
     totalSessions,
     totalUsers,
     loaderPerformanceMetrics,
@@ -44,17 +40,17 @@ export function Page(): React.JSX.Element {
     seoMetrics,
     performanceMetrics,
     generalMetrics,
-    fetchPageSpeedData
-  } = useAnalytics(setRange, params, range, "activeUsers");
+    fetchPageSpeedData,
+  } = useAnalytics(setRange, params, range, 'activeUsers');
 
-  React.useEffect( () => {
-    fetchAnalyticsData();
-    fetchPageSpeedData();
-  }, [params.get("range")])
-  
+  React.useEffect(() => {
+    void fetchAnalyticsData();
+    void fetchPageSpeedData();
+  }, [params.get('range')]);
+
   React.useEffect(() => {
     refreshData();
-  }, [params.get("metric")])
+  }, [params.get('metric')]);
 
   return (
     <React.Fragment>
@@ -78,44 +74,39 @@ export function Page(): React.JSX.Element {
               <RangeButton range={range} setRange={setRange} setParams={setParams} params={params} />
             </div>
           </Stack>
+
           <Grid container spacing={4}>
-            <Grid size={12}>
-              <Summary loader={loaderData} metric={metric} setParams={setParams} totalUsers={totalUsers} totalSessions={totalSessions} averageBounceRate={averageBounceRate} averageDuration={averageDuration} />
-            </Grid>
-            <Grid
-              size={{
-                lg: 12,
-                xs: 12,
-              }}
-            >
-              <CountrySessionsVsBounce
-                data={data}
-                range={range}
+            <Grid item xs={12}>
+              <Summary
                 metric={metric}
+                setParams={setParams}
+                totalUsers={totalUsers}
+                totalSessions={totalSessions}
+                averageBounceRate={averageBounceRate}
+                averageDuration={averageDuration}
                 loader={loaderData}
-              />
+              >
+                <CountrySessionsVsBounce
+                  data={data}
+                  range={range}
+                  metric={metric}
+                  loader={loaderData}
+                />
+              </Summary>
             </Grid>
-            {/* <Grid
-              size={{
-                lg: 4,
-                xs: 12,
-              }}
-            >
-              <Devices
-              loader={loaderSessionData}
-              data={sessionData}
+
+            <Grid item xs={12}>
+              <PerformanceChartCard
+                hasErrors={hasErrors}
+                loader={loaderPerformanceMetrics}
+                metricsData={[
+                  { chart: accessibilityMetrics, needComplement: true },
+                  { chart: bestPracticesMetrics, needComplement: true },
+                  { chart: seoMetrics, needComplement: true },
+                  { chart: performanceMetrics, needComplement: true },
+                  { chart: generalMetrics, needComplement: false },
+                ]}
               />
-            </Grid> */}
-            <Grid
-              size={{
-                lg: 12,
-                xs: 12,
-              }}
-            >
-              <PerformanceChartCard hasErrors={hasErrors} loader={loaderPerformanceMetrics} 
-              metricsData={[ {chart:accessibilityMetrics, needComplement: true}, {chart:bestPracticesMetrics, needComplement: true}, {chart:seoMetrics, needComplement: true}, {chart:performanceMetrics, needComplement: true}, {chart:generalMetrics, needComplement: false}]}
-              />
-              
             </Grid>
           </Grid>
         </Stack>

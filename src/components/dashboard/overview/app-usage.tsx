@@ -1,20 +1,18 @@
 'use client';
 
 import * as React from 'react';
-import { useSearchParams } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardHeader from '@mui/material/CardHeader';
 import Divider from '@mui/material/Divider';
-import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis } from 'recharts';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, XAxis } from 'recharts';
 
 import { NoSsr } from '@/components/core/no-ssr';
-import { formatLabel, getDataKey, tooltipFormatter } from '@/utils/analytics';
-import type { Range, Metric, RunReportResponseData, Row } from "@/types/analytics";
+import { getDataKey } from '@/utils/analytics';
+import type { Metric } from "@/types/analytics";
 
 const bars = [
   { name: 'This year', dataKey: 'v1', color: 'var(--mui-palette-primary-400)' },
@@ -26,10 +24,8 @@ export interface AppUsageProps {
 }
 
 export function AppUsage({ data }: Readonly<AppUsageProps>): React.JSX.Element {
-  const [params, _] = useSearchParams();
-  const [metric, setMetric] = React.useState<Metric>("activeUsers");
+  const [metric, __] = React.useState<Metric>("activeUsers");
 
-  const range = (params.get("range") ?? "week") as Range;
 
   const chartHeight = 300;
 
@@ -122,34 +118,3 @@ function Legend(): React.JSX.Element {
   );
 }
 
-interface TooltipContentProps {
-  active?: boolean;
-  payload?: { fill: string; name: string; dataKey: string; value: number }[];
-  label?: string;
-}
-
-function TooltipContent({ active, payload }: Readonly<TooltipContentProps>): React.JSX.Element | null {
-  if (!active) {
-    return null;
-  }
-
-  return (
-    <Paper sx={{ border: '1px solid var(--mui-palette-divider)', boxShadow: 'var(--mui-shadows-16)', p: 1 }}>
-      <Stack spacing={2}>
-        {payload?.map(
-          (entry): React.JSX.Element => (
-            <Stack direction="row" key={entry.name} spacing={3} sx={{ alignItems: 'center' }}>
-              <Stack direction="row" spacing={1} sx={{ alignItems: 'center', flex: '1 1 auto' }}>
-                <Box sx={{ bgcolor: entry.fill, borderRadius: '2px', height: '8px', width: '8px' }} />
-                <Typography sx={{ whiteSpace: 'nowrap' }}>{entry.name}</Typography>
-              </Stack>
-              <Typography color="text.secondary" variant="body2">
-                {new Intl.NumberFormat('en-US').format(entry.value)}
-              </Typography>
-            </Stack>
-          )
-        )}
-      </Stack>
-    </Paper>
-  );
-}

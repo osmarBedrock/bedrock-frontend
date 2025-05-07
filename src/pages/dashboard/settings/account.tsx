@@ -6,7 +6,6 @@ import { Helmet } from 'react-helmet-async';
 import type { Metadata } from '@/types/metadata';
 import { config } from '@/config';
 import { AccountDetails } from '@/components/dashboard/settings/account-details';
-import { DeleteAccount } from '@/components/dashboard/settings/delete-account';
 import { Privacy } from '@/components/dashboard/settings/privacy';
 import { ThemeSwitch } from '@/components/dashboard/settings/theme-switch';
 import { useClient } from '@/hooks/use-client';
@@ -14,8 +13,7 @@ import { useClient } from '@/hooks/use-client';
 const metadata = { title: `Account | Settings | Dashboard | ${config.site.name}` } satisfies Metadata;
 
 export function Page(): React.JSX.Element {
-  const {user, updateUser} = useClient()
-  
+  const { user: userClient, updateUser } = useClient();
   return (
     <React.Fragment>
       <Helmet>
@@ -26,7 +24,7 @@ export function Page(): React.JSX.Element {
           <Typography variant="h4">Account</Typography>
         </div>
         <Stack spacing={4}>
-          <AccountDetails user={user} updateFunction={updateUser} />
+          <AccountDetails user={userClient} updateFunction={updateUser} />
           <ThemeSwitch />
           <Privacy />
           {/* <DeleteAccount /> */}

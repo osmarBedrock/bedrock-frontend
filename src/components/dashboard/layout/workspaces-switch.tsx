@@ -5,22 +5,15 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { CaretUpDown as CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr/CaretUpDown';
+import { useClient } from '@/hooks/use-client';
 
-import { usePopover } from '@/hooks/use-popover';
-
-import { workspaces, WorkspacesPopover } from './workspaces-popover';
 
 export function WorkspacesSwitch(): React.JSX.Element {
-  const popover = usePopover<HTMLDivElement>();
-  const workspace = workspaces[0];
-
+  const {user} = useClient()
   return (
     <React.Fragment>
       <Stack
         direction="row"
-        // onClick={popover.handleOpen}
-        ref={popover.anchorRef}
         spacing={2}
         sx={{
           alignItems: 'center',
@@ -30,23 +23,18 @@ export function WorkspacesSwitch(): React.JSX.Element {
           p: '4px 8px',
         }}
       >
-        <Avatar src={workspace.avatar} variant="rounded" />
-        <Box sx={{ flex: '1 1 auto' }}>
-          <Typography color="var(--Workspaces-title-color)" variant="caption">
+        <Stack direction="row" spacing={2}>
+          <Avatar src={user?.enterprisePicture || '/assets/company-image-3.jpg'} variant="rounded" />
+          <Box sx={{ flex: '1 1 auto' }}>
+            <Typography color="var(--Workspaces-title-color)" variant="caption">
             Workspace
           </Typography>
-          <Typography color="var(--Workspaces-name-color)" variant="subtitle2">
-            {workspace.name}
-          </Typography>
-        </Box>
-        {/* <CaretUpDownIcon color="var(--Workspac  es-expand-color)" fontSize="var(--icon-fontSize-sm)" /> */}
+          <Typography color="var(--Workspaces-name-color)" variant="subtitle2" sx={{ textTransform: 'capitalize' }}>
+            {user?.enterpriseName}
+            </Typography>
+          </Box>
+        </Stack>
       </Stack>
-      <WorkspacesPopover
-        anchorEl={popover.anchorRef.current}
-        onChange={popover.handleClose}
-        onClose={popover.handleClose}
-        open={popover.open}
-      />
     </React.Fragment>
   );
 }

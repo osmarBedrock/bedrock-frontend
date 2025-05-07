@@ -15,7 +15,6 @@ import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 import { useTranslation } from 'react-i18next';
 
 import type { NavItemConfig } from '@/types/nav';
-import type { User } from '@/types/user';
 import { useDialog } from '@/hooks/use-dialog';
 import { usePopover } from '@/hooks/use-popover';
 
@@ -202,10 +201,10 @@ function UserButton(): React.JSX.Element {
           }}
           variant="dot"
         >
-          <Avatar src={user?.avatarUrl || '/assets/avatar.png'} />
+          <Avatar src={user?.avatar || '/assets/placeholder-person-image.png'} />
         </Badge>
       </Box>
-      <UserPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} user={user} />
+      <UserPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} user={user ?? null} />
     </React.Fragment>
   );
 }

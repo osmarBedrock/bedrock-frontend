@@ -17,26 +17,21 @@ import { Phone as PhoneIcon } from '@phosphor-icons/react/dist/ssr/Phone';
 import { Prohibit as ProhibitIcon } from '@phosphor-icons/react/dist/ssr/Prohibit';
 import { Trash as TrashIcon } from '@phosphor-icons/react/dist/ssr/Trash';
 
-import type { User } from '@/types/user';
 import { usePopover } from '@/hooks/use-popover';
+import { useUser } from '@/hooks/use-user';
 
 import type { Thread } from './types';
 
-const user = {
-  id: 'USR-000',
-  name: 'Sofia Rivers',
-  avatar: '/assets/avatar.png',
-  email: 'sofia@devias.io',
-} satisfies User;
 
 export interface ThreadToolbarProps {
   thread: Thread;
 }
 
 export function ThreadToolbar({ thread }: ThreadToolbarProps): React.JSX.Element {
+  const { user } = useUser();
   const popover = usePopover<HTMLButtonElement>();
 
-  const recipients = (thread.participants ?? []).filter((participant) => participant.id !== user.id);
+  const recipients = (thread.participants ?? []).filter((participant) => participant.id !== user?.id);
 
   return (
     <React.Fragment>

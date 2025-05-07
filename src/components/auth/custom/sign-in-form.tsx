@@ -48,10 +48,10 @@ const defaultValues = { email: '', password: '' } satisfies Values;
 
 export function SignInForm(): React.JSX.Element {
   const { checkSession } = useUser();
-  
+
   const [searchParams] = useSearchParams();
 
-  const [ code, setCode ] = React.useState<any>(null);
+  const [ code, setCode ] = React.useState<string | null>(null);
 
   const [showPassword, setShowPassword] = React.useState<boolean>();
 
@@ -65,20 +65,19 @@ export function SignInForm(): React.JSX.Element {
   } = useForm<Values>({ defaultValues, resolver: zodResolver(schema) });
 
   const handleSignIn = React.useCallback(
-    async (code: string): Promise<void> => {
+    async (newCode: string): Promise<void> => {
     try {
       setIsPending(true);
-      const { error } = await authClient.handleTokenFormGoogle(code);
+      const { error } = await authClient.handleTokenFormGoogle(newCode);
 
       if (error) {
-        setError('root', { type: 'server', message: error });
+        setError('root', { type: 'server', message: String(error) });
         setIsPending(false);
         return;
       }
     } catch (error) {
-      setError('root', { type: 'server', message: '' + error });
+      setError('root', { type: 'server', message: String(error) });
       setIsPending(false);
-      console.error('Error signing in:', error);
     }
     // Refresh the auth state
     await checkSession?.();
@@ -88,7 +87,7 @@ export function SignInForm(): React.JSX.Element {
 
   React.useEffect(() => {
     setCode((searchParams.get('code') ?? ''));
-    if(code) handleSignIn(code);
+    if(code) void handleSignIn(code);
   }, [code]);
 
   const onAuth = React.useCallback(async (providerId: OAuthProvider['id']): Promise<void> => {
@@ -98,7 +97,7 @@ export function SignInForm(): React.JSX.Element {
 
     if (error) {
       setIsPending(false);
-      toast.error(error);
+      toast.error(String(error));
       return;
     }
 
@@ -116,9 +115,8 @@ export function SignInForm(): React.JSX.Element {
       const { error } = await authClient.signInWithPassword(values);
 
       if (error) {
-        console.log('error', error);
-        toast.error(error.message);
-        setError('root', { type: 'server', message: error.message });
+        toast.error(String(error));
+        setError('root', { type: 'server', message: String(error) });
         setIsPending(false);
         return;
       }
@@ -227,7 +225,7 @@ export function SignInForm(): React.JSX.Element {
           </div>
         </Stack>
       </Stack>
-      {/* <Alert color="warning"> 
+      {/* <Alert color="warning">
         Use{' '}
         <Typography component="span" sx={{ fontWeight: 700 }} variant="inherit">
           sofia@devias.io

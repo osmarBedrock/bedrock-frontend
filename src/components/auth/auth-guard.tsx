@@ -2,6 +2,8 @@
 
 import * as React from 'react';
 import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import Box from '@mui/material/Box';
 import { useNavigate } from 'react-router-dom';
 
 import { config } from '@/config';
@@ -14,69 +16,90 @@ export interface AuthGuardProps {
   children: React.ReactNode;
 }
 
-export function AuthGuard({ children }: Readonly<AuthGuardProps>): React.JSX.Element | null {
+export function AuthGuard({ children }: Readonly<AuthGuardProps>): React.JSX.Element {
   const navigate = useNavigate();
   const { user, error, isLoading } = useUser();
   const [isChecking, setIsChecking] = React.useState<boolean>(true);
+  const [loggedState, setLoggedState] = React.useState<string>('');
 
-  const checkPermissions = async (): Promise<void> => {
-    if (isLoading) {
-      return;
-    }
+  // Debug: Estado único por renderizado
+  React.useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      const currentState = JSON.stringify({
+        user: user ? 'Authenticated' : 'Guest',
+        loading: isLoading ? 'Checking' : 'Ready',
+        error: error || 'None'
+      });
 
-    if (error) {
-      setIsChecking(false);
-      return;
-    }
-
-    if (!user) {
-      logger.debug('[AuthGuard]: User is not logged in, redirecting to sign in');
-
-      switch (config.auth.strategy) {
-        case AuthStrategy.CUSTOM: {
-          navigate(paths.auth.custom.signIn, { replace: true });
-          return;
-        }
-        case AuthStrategy.AUTH0: {
-          navigate(paths.auth.auth0.signIn, { replace: true });
-          return;
-        }
-        case AuthStrategy.COGNITO: {
-          navigate(paths.auth.cognito.signIn, { replace: true });
-          return;
-        }
-        case AuthStrategy.FIREBASE: {
-          navigate(paths.auth.firebase.signIn, { replace: true });
-          return;
-        }
-        case AuthStrategy.SUPABASE: {
-          navigate(paths.auth.supabase.signIn, { replace: true });
-          return;
-        }
-        default: {
-          logger.error('[AuthGuard]: Unknown auth strategy');
-          return;
-        }
+      if (currentState !== loggedState) {
+        logger.debug('[AuthGuard State]', {
+          user: user ? 'Authenticated' : 'Guest',
+          loading: isLoading ? 'Checking' : 'Ready',
+          error: error || 'None'
+        });
+        setLoggedState(currentState);
       }
     }
+  }, [user, isLoading, error, loggedState]);
 
-    setIsChecking(false);
-  };
+  const checkPermissions = React.useCallback(async (): Promise<void> => {
+    try {
+      if (isLoading) return;
+
+      if (error) {
+        setIsChecking(false);
+        return;
+      }
+
+      if (!user) {
+        logger.debug('[AuthGuard] Redirecting to login...');
+        const signInPaths = {
+          [AuthStrategy.CUSTOM]: paths.auth.custom.signIn,
+          [AuthStrategy.AUTH0]: paths.auth.auth0.signIn,
+          [AuthStrategy.COGNITO]: paths.auth.cognito.signIn,
+          [AuthStrategy.FIREBASE]: paths.auth.firebase.signIn,
+          [AuthStrategy.SUPABASE]: paths.auth.supabase.signIn,
+        };
+        navigate(signInPaths[config.auth.strategy] || paths.auth.custom.signIn, {
+          replace: true
+        });
+        return;
+      }
+
+      setIsChecking(false);
+    } catch (err) {
+      logger.error('[AuthGuard] Check error:', err);
+      setIsChecking(false);
+    }
+  }, [isLoading, error, user, navigate]);
 
   React.useEffect(() => {
-    checkPermissions().catch(() => {
-      // noop
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Expected
-  }, [user, error, isLoading]);
+    void checkPermissions();
+  }, [checkPermissions]);
 
-  if (isChecking) {
-    return null;
+  if (isChecking || isLoading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
   }
 
   if (error) {
-    return <Alert color="error">{error}</Alert>;
+    return (
+      <Alert severity="error" sx={{ m: 2 }}>
+        Authentication error: {error}
+      </Alert>
+    );
   }
 
-  return <React.Fragment>{children}</React.Fragment>;
+  if (!user) {
+    return (
+      <Alert severity="warning" sx={{ m: 2 }}>
+        Redirecting to login...
+      </Alert>
+    );
+  }
+
+  return <>{children}</>;
 }

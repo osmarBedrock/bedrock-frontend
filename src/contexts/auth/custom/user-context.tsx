@@ -23,7 +23,7 @@ export function UserProvider({ children }: UserProviderProps): React.JSX.Element
 
   const checkSession = React.useCallback(async (): Promise<void> => {
     try {
-      const { data, error } = await authClient.getUser();
+      const { user, error } = await authClient.getUser();
 
       if (error) {
         logger.error(error);
@@ -31,7 +31,53 @@ export function UserProvider({ children }: UserProviderProps): React.JSX.Element
         return;
       }
 
-      setState((prev) => ({ ...prev, user: data ?? null, error: null, isLoading: false }));
+      if (!user) {
+        setState((prev) => ({
+          ...prev,
+          user: null,
+          error: null,
+          isLoading: false
+        }));
+        return;
+      }
+
+      const userData: User = {
+        id: Number(user.id),
+        email: user.email || '',
+        firstName: (user.firstName) || '',
+        lastName: (user.lastName) || '',
+        avatar: (user.avatar) || '',
+        passwordHash: '',
+        googleId: null,
+        emailVerified: user.emailVerified || false,
+        planType: '',
+        stripeCustomerId: null,
+        currentPeriodEnd: null,
+        isProfileComplete: false,
+        enterpriseName: user.enterpriseName || '',
+        enterprisePicture: null,
+        verificationData: user.verificationData || {
+          dnsRecord: '',
+          verificationUrl: ''
+        },
+        websites: user.websites || [],
+        website: user.website || {
+          id: 0,
+          domain: '',
+          propertyId: '',
+          verificationCode: '',
+          isVerified: false,
+          userId: 0,
+          googleAccessToken: '',
+          googleRefreshToken: '',
+          semrushApiKey: null,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      };
+
+
+      setState((prev) => ({ ...prev, user: userData, error: null, isLoading: false }));
     } catch (err) {
       logger.error(err);
       setState((prev) => ({ ...prev, user: null, error: 'Something went wrong', isLoading: false }));

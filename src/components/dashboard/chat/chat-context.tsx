@@ -3,6 +3,7 @@
 import * as React from 'react';
 
 import type { Contact, Message, MessageType, Participant, Thread } from './types';
+import { useUser } from '@/hooks/use-user';
 
 function noop(): void {
   return undefined;
@@ -55,6 +56,7 @@ export function ChatProvider({
   threads: initialLabels = [],
   messages: initialMessages = [],
 }: ChatProviderProps): React.JSX.Element {
+  const { user } = useUser();
   const [contacts, setContacts] = React.useState<Contact[]>([]);
   const [threads, setThreads] = React.useState<Thread[]>([]);
   const [messages, setMessages] = React.useState<Map<string, Message[]>>(new Map());
@@ -83,8 +85,7 @@ export function ChatProvider({
 
   const handleCreateThread = React.useCallback(
     (params: CreateThreadParams): string => {
-      // Authenticated user
-      const userId = 'USR-000';
+        // Authenticated user
 
       // Check if the thread already exists
       let thread = threads.find((thread) => {
@@ -94,8 +95,8 @@ export function ChatProvider({
           }
 
           return thread.participants
-            .filter((participant) => participant.id !== userId)
-            .find((participant) => participant.id === params.recipientId);
+            .filter((participant) => participant.id !== user?.id)
+            .find((participant) => participant.id === Number(params.recipientId));
         }
 
         if (thread.type !== 'group') {
@@ -103,26 +104,25 @@ export function ChatProvider({
         }
 
         const recipientIds = thread.participants
-          .filter((participant) => participant.id !== userId)
+          .filter((participant) => participant.id !== user?.id)
           .map((participant) => participant.id);
 
         if (params.recipientIds.length !== recipientIds.length) {
           return false;
         }
 
-        return params.recipientIds.every((recipientId) => recipientIds.includes(recipientId));
+        return params.recipientIds.every((recipientId) => recipientIds.includes(Number(recipientId)));
       });
 
       if (thread) {
-        return thread.id;
+        return String(thread.id);
       }
 
       // Create a new thread
-
-      const participants: Participant[] = [{ id: 'USR-000', name: 'Sofia Rivers', avatar: '/assets/avatar.png' }];
+      const participants: Participant[] = [{ id: user?.id ?? 0, name: user?.firstName ?? '', avatar: user?.avatar ?? '' }];
 
       if (params.type === 'direct') {
-        const contact = contacts.find((contact) => contact.id === params.recipientId);
+        const contact = contacts.find((contact) => contact.id === Number(params.recipientId));
 
         if (!contact) {
           throw new Error(`Contact with id "${params.recipientId}" not found`);
@@ -131,7 +131,7 @@ export function ChatProvider({
         participants.push({ id: contact.id, name: contact.name, avatar: contact.avatar });
       } else {
         params.recipientIds.forEach((recipientId) => {
-          const contact = contacts.find((contact) => contact.id === recipientId);
+          const contact = contacts.find((contact) => contact.id === Number(recipientId));
 
           if (!contact) {
             throw new Error(`Contact with id "${recipientId}" not found`);
@@ -141,22 +141,20 @@ export function ChatProvider({
         });
       }
 
-      thread = { id: `TRD-${Date.now()}`, type: params.type, participants, unreadCount: 0 } satisfies Thread;
-
       // Add it to the threads
-      const updatedThreads = [thread, ...threads];
+      // const updatedThreads = [thread, ...threads];
 
       // Dispatch threads update
-      setThreads(updatedThreads);
+      // setThreads(updatedThreads);
 
-      return thread.id;
+      return '';
     },
     [contacts, threads]
   );
 
   const handleMarkAsRead = React.useCallback(
     (threadId: string) => {
-      const thread = threads.find((thread) => thread.id === threadId);
+      const thread = threads.find((thread) => thread.id === Number(threadId));
 
       if (!thread) {
         // Thread might no longer exist
@@ -164,7 +162,7 @@ export function ChatProvider({
       }
 
       const updatedThreads = threads.map((threadToUpdate) => {
-        if (threadToUpdate.id !== threadId) {
+        if (threadToUpdate.id !== Number(threadId)) {
           return threadToUpdate;
         }
 
@@ -180,10 +178,10 @@ export function ChatProvider({
   const handleCreateMessage = React.useCallback(
     (params: CreateMessageParams): void => {
       const message = {
-        id: `MSG-${Date.now()}`,
+        id: new Date().getTime(),
         threadId: params.threadId,
         type: params.type,
-        author: { id: 'USR-000', name: 'Sofia Rivers', avatar: '/assets/avatar.png' },
+        author: { id: user?.id ?? 0, name: user?.firstName ?? '', avatar: user?.avatar ?? '' },
         content: params.content,
         createdAt: new Date(),
       } satisfies Message;

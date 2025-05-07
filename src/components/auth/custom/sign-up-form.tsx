@@ -19,11 +19,12 @@ import { Controller, useForm } from 'react-hook-form';
 import { z as zod } from 'zod';
 
 import { paths } from '@/paths';
-import { authClient } from '@/lib/auth/custom/client';
+import { authClient, SignUpParams } from '@/lib/auth/custom/client';
 import { useUser } from '@/hooks/use-user';
 import { RouterLink } from '@/components/core/link';
 import { DynamicLogo } from '@/components/core/logo';
 import { toast } from '@/components/core/toaster';
+
 
 interface OAuthProvider {
   id: 'google' | 'discord';
@@ -40,13 +41,23 @@ const schema = zod.object({
   firstName: zod.string().min(1, { message: 'First name is required' }),
   lastName: zod.string().min(1, { message: 'Last name is required' }),
   email: zod.string().min(1, { message: 'Email is required' }).email(),
+  enterpriseName: zod.string().min(1, { message: 'Enterprise name is required' }),
+  domain: zod.string().min(1, { message: 'Enterprise domain is required' }),
   password: zod.string().min(6, { message: 'Password should be at least 6 characters' }),
   terms: zod.boolean().refine((value) => value, 'You must accept the terms and conditions'),
 });
 
 type Values = zod.infer<typeof schema>;
 
-const defaultValues = { firstName: '', lastName: '', email: '', password: '', terms: false } satisfies Values;
+const defaultValues = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  enterpriseName: '',
+  domain: '',
+  password: '',
+  terms: false,
+} satisfies SignUpParams;
 
 export function SignUpForm(): React.JSX.Element {
   const { checkSession } = useUser();
@@ -67,29 +78,40 @@ export function SignUpForm(): React.JSX.Element {
 
     if (error) {
       setIsPending(false);
-      toast.error(error);
+      toast.error(error.message);
       return;
     }
 
     window.location.href = url ?? '';
 
     setIsPending(false);
-
   }, []);
 
   const onSubmit = React.useCallback(
-    async (values: Values): Promise<void> => {
+    async (values: SignUpParams): Promise<void> => {
       setIsPending(true);
+      try {
+        // 1. Marcar como pendiente al iniciar
 
-      const { error } = await authClient.signUp(values);
+        const { error } = await authClient.signUp(values);
 
-      if (error) {
-        setError('root', { type: 'server', message: error.message });
+        if (error) {
+          // 2. Si hay error, volver a inactive
+          setError('root', { type: 'server', message: error.message });
+          return;
+        }
+
+        // 3. Si es exitoso, marcar como active
+        await checkSession?.();
+
+        // Opcional: Redirigir después de registro exitoso
+        // window.location.href = paths.dashboard;
+
+      } catch (err) {
+        setError('root', { type: 'server', message: 'An unexpected error occurred' });
+      } finally {
         setIsPending(false);
-        return;
       }
-
-      await checkSession?.();
     },
     [checkSession, setError]
   );
@@ -158,6 +180,28 @@ export function SignUpForm(): React.JSX.Element {
             />
             <Controller
               control={control}
+              name="enterpriseName"
+              render={({ field }) => (
+                <FormControl error={Boolean(errors.enterpriseName)}>
+                  <InputLabel>Enterprise name</InputLabel>
+                  <OutlinedInput {...field} />
+                  {errors.enterpriseName ? <FormHelperText>{errors.enterpriseName.message}</FormHelperText> : null}
+                </FormControl>
+              )}
+            />
+            <Controller
+              control={control}
+              name="domain"
+              render={({ field }) => (
+                <FormControl error={Boolean(errors.domain)}>
+                  <InputLabel>Enterprise domain</InputLabel>
+                  <OutlinedInput {...field} />
+                  {errors.domain ? <FormHelperText>{errors.domain.message}</FormHelperText> : null}
+                </FormControl>
+              )}
+            />
+            <Controller
+              control={control}
               name="email"
               render={({ field }) => (
                 <FormControl error={Boolean(errors.email)}>
@@ -196,9 +240,24 @@ export function SignUpForm(): React.JSX.Element {
               )}
             />
             {errors.root ? <Alert color="error">{errors.root.message}</Alert> : null}
-            <Button disabled={isPending} type="submit" variant="contained">
-              Create account
+            <Button
+              disabled={isPending}
+              type="submit"
+              variant="contained"
+              sx={{
+                bgcolor: isPending ? 'grey.500' : 'primary.main',
+                '&:hover': {
+                  bgcolor: isPending ? 'grey.500' : 'primary.dark'
+                }
+              }}
+              >
+              {isPending ? 'Creating account...' : 'Create account'}
             </Button>
+            {status === "pending" && (
+              <Alert severity="info" sx={{ mt: 2 }}>
+                Your account is being created. You&apos;ll be redirected shortly.
+              </Alert>
+            )}
           </Stack>
         </form>
       </Stack>

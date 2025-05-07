@@ -1,8 +1,9 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
-import { useColorScheme } from '@mui/material/styles';
+import { SxProps, Theme, useColorScheme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { ArrowSquareOut as ArrowSquareOutIcon } from '@phosphor-icons/react/dist/ssr/ArrowSquareOut';
 import { CaretDown as CaretDownIcon } from '@phosphor-icons/react/dist/ssr/CaretDown';
@@ -16,16 +17,23 @@ import { usePathname } from '@/hooks/use-pathname';
 import { RouterLink } from '@/components/core/link';
 import { Logo } from '@/components/core/logo';
 import type { ColorScheme } from '@/styles/theme/types';
+import { toast } from '@/components/core/toaster';
 
 import { icons } from '../nav-icons';
 import { WorkspacesSwitch } from '../workspaces-switch';
 import { navColorStyles } from './styles';
+import { authClient } from '@/lib/auth/custom/client';
+import { useUser } from '@/hooks/use-user';
 
 const logoColors = {
   dark: { blend_in: 'light', discrete: 'light', evident: 'light' },
   light: { blend_in: 'dark', discrete: 'dark', evident: 'light' },
 } as Record<ColorScheme, Record<NavColor, 'dark' | 'light'>>;
-
+const provider = {
+  id: 'google',
+  name: 'Google',
+  logo: '/assets/logo-google.svg',
+};
 export interface SideNavProps {
   color?: NavColor;
   items?: NavItemConfig[];
@@ -33,11 +41,28 @@ export interface SideNavProps {
 
 export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.JSX.Element {
   const pathname = usePathname();
+  const { user } = useUser();
 
   const { colorScheme = 'light' } = useColorScheme();
 
   const styles = navColorStyles[colorScheme][color];
   const logoColor = logoColors[colorScheme][color];
+
+  const handleGoogleAuth = async (): Promise<void> => {
+    try {
+      const { url, error } = await authClient.signInWithOAuth({ provider: 'google' });
+
+      if (error) {
+        toast.error(String(error));
+        return;
+      }
+
+      window.location.href = url ?? '';
+
+    } catch (error) {
+      toast.error(String(error));
+    }
+  };
 
   return (
     <Box
@@ -74,6 +99,51 @@ export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.
           '&::-webkit-scrollbar': { display: 'none' },
         }}
       >
+        <Stack component="li" key="google-access" spacing={1.5}>
+        {
+          user?.website?.googleAccessToken &&
+            <Button
+            color="secondary"
+            endIcon={<Box alt="" component="img" height={24} src={provider.logo} width={24}/>}
+            key={provider.id}
+            onClick={handleGoogleAuth}
+            variant="outlined"
+            sx={[
+              {
+                fontWeight: 500,
+                textTransform: 'none',
+                borderRadius: '6px',
+                padding: '8px 16px',
+                marginBottom: '10px',
+                '& .MuiButton-endIcon': {
+                  marginLeft: '10px',
+                },
+                transition: 'all 0.2s ease-in-out',
+              },
+              colorScheme === 'light' ? {
+                backgroundColor: 'var(--mui-palette-neutral-800)',
+                borderColor: 'var(--mui-palette-neutral-900)',
+                color: 'var(--NavItem-active-color)',
+                '&:hover': {
+                  backgroundColor: 'var(--mui-palette-neutral-950)',
+                  borderColor: 'var(--mui-palette-neutral-800)',
+                },
+              } : {
+                // Estilos para modo oscuro
+                backgroundColor: 'var(--mui-palette-neutral-200)',
+                borderColor: 'var(--mui-palette-neutral-300)',
+                color: 'var(--mui-palette-neutral-900)',
+                '&:hover': {
+                  backgroundColor: 'var(--mui-palette-neutral-100)',
+                  borderColor: 'var(--mui-palette-neutral-200)',
+                },
+              }
+            ]}
+          >
+            Grant access to {provider.name}
+          </Button>
+        }
+        </Stack>
         {renderNavGroups({ items, pathname })}
       </Box>
     </Box>
@@ -142,6 +212,9 @@ interface NavItemProps extends Omit<NavItemConfig, 'items'> {
   depth: number;
   forceOpen?: boolean;
   pathname: string;
+  buttonVariant?: 'text' | 'outlined' | 'contained'; // Tipos de botón de MUI
+  buttonColor?: 'primary' | 'secondary' | 'error' | 'inherit'; // Colores de MUI
+  sx?: SxProps<Theme>; // Estilos personalizados
 }
 
 function NavItem({
@@ -156,6 +229,9 @@ function NavItem({
   matcher,
   pathname,
   title,
+  buttonVariant,
+  buttonColor,
+  sx,
 }: NavItemProps): React.JSX.Element {
   const [open, setOpen] = React.useState<boolean>(forceOpen);
   const active = isNavItemActive({ disabled, external, href, matcher, pathname });
@@ -163,6 +239,35 @@ function NavItem({
   const ExpandIcon = open ? CaretDownIcon : CaretRightIcon;
   const isBranch = children && !href;
   const showChildren = Boolean(children && open);
+  const { user } = useUser();
+  const isDisabled = href && !user?.website?.googleAccessToken;
+
+  if (buttonVariant) {
+    return (
+      <Button
+        fullWidth
+        variant={buttonVariant}
+        color={buttonColor}
+        startIcon={Icon ? <Icon fontSize="var(--icon-fontSize-md)" /> : null}
+        disabled={disabled}
+        href={href}
+        sx={{
+          justifyContent: 'flex-start',
+          textTransform: 'none',
+          py: 1,
+          px: 2,
+          ...sx,
+          ...(active && {
+            bgcolor: 'var(--NavItem-active-background)',
+            color: 'var(--NavItem-active-color)',
+          }),
+        }}
+      >
+        {title}
+        {label ? <Chip label={label} size="small" sx={{ ml: 1 }} /> : null}
+      </Button>
+    );
+  }
 
   return (
     <Box component="li" data-depth={depth} sx={{ userSelect: 'none' }}>
@@ -180,7 +285,7 @@ function NavItem({
               role: 'button',
             }
           : {
-              ...(href
+              ...(isDisabled
                 ? {
                     component: external ? 'a' : RouterLink,
                     href,
@@ -201,7 +306,7 @@ function NavItem({
           position: 'relative',
           textDecoration: 'none',
           whiteSpace: 'nowrap',
-          ...(disabled && {
+          ...(!isDisabled && {
             bgcolor: 'var(--NavItem-disabled-background)',
             color: 'var(--NavItem-disabled-color)',
             cursor: 'not-allowed',
@@ -223,9 +328,11 @@ function NavItem({
           }),
           ...(open && { color: 'var(--NavItem-open-color)' }),
           '&:hover': {
-            ...(!disabled &&
+            ...(isDisabled &&
               !active && { bgcolor: 'var(--NavItem-hover-background)', color: 'var(--NavItem-hover-color)' }),
           },
+          pointerEvents: !isDisabled ? 'none' : 'auto',
+          opacity: !isDisabled ? 0.5 : 1
         }}
         tabIndex={0}
       >

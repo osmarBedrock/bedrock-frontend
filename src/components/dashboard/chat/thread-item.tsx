@@ -5,19 +5,13 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import type { User } from '@/types/user';
 import { dayjs } from '@/lib/dayjs';
 
 import type { Message, Thread } from './types';
+import { useUser } from '@/hooks/use-user';
 
-const user = {
-  id: 'USR-000',
-  name: 'Sofia Rivers',
-  avatar: '/assets/avatar.png',
-  email: 'sofia@devias.io',
-} satisfies User;
 
-function getDisplayContent(lastMessage: Message, userId: string): string {
+function getDisplayContent(lastMessage: Message, userId: number): string {
   const author = lastMessage.author.id === userId ? 'Me: ' : '';
   const message = lastMessage.type === 'image' ? 'Sent a photo' : lastMessage.content;
 
@@ -32,7 +26,9 @@ export interface ThreadItemProps {
 }
 
 export function ThreadItem({ active = false, thread, messages, onSelect }: ThreadItemProps): React.JSX.Element {
-  const recipients = (thread.participants ?? []).filter((participant) => participant.id !== user.id);
+  const { user } = useUser();
+
+  const recipients = (thread.participants ?? []).filter((participant) => participant.id !== user?.id);
 
   const lastMessage = messages[messages.length - 1];
 
@@ -94,7 +90,7 @@ export function ThreadItem({ active = false, thread, messages, onSelect }: Threa
             ) : null}
             {lastMessage ? (
               <Typography color="text.secondary" noWrap sx={{ flex: '1 1 auto' }} variant="subtitle2">
-                {getDisplayContent(lastMessage, user.id)}
+                {getDisplayContent(lastMessage, user?.id ?? 0)}
               </Typography>
             ) : null}
           </Stack>

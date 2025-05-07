@@ -5,27 +5,31 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-export type PlanId = 'startup' | 'standard' | 'business';
+export type PlanId = 'essential' | 'pro' | 'elite';
 
 export interface Plan {
   id: PlanId;
   name: string;
   currency: string;
   price: number;
+  period?: string;
 }
 
 export interface PlanCardProps {
   plan: Plan;
   isCurrent?: boolean;
+  action?: React.ReactNode; 
 }
 
-export function PlanCard({ plan, isCurrent }: PlanCardProps): React.JSX.Element {
+export function PlanCard({ plan, isCurrent, action }: PlanCardProps): React.JSX.Element {
+  const periodText = plan.period === '/year' ? '/yr' : '/mo';
+
   return (
     <Card
       sx={{ cursor: 'pointer', ...(isCurrent && { border: '2px solid var(--mui-palette-primary-main)' }) }}
       variant="outlined"
     >
-      <Stack spacing={1} sx={{ p: 3 }}>
+      <Stack spacing={2} sx={{ p: 3 }}> {/* Aumenté el spacing para mejor visualización */}
         <PlanIcon name={plan.id} />
         <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
           <Typography sx={{ flex: '1 1 auto' }} variant="overline">
@@ -38,9 +42,10 @@ export function PlanCard({ plan, isCurrent }: PlanCardProps): React.JSX.Element 
             {new Intl.NumberFormat('en-US', { style: 'currency', currency: plan.currency }).format(plan.price)}
           </Typography>
           <Typography color="text.secondary" variant="body2">
-            /mo
+            {periodText}
           </Typography>
         </Box>
+        {action && <Box sx={{ pt: 1 }}>{action}</Box>} {/* Añadí el contenedor para el botón */}
       </Stack>
     </Card>
   );
@@ -52,7 +57,7 @@ interface PlanIconProps {
 
 function PlanIcon({ name }: PlanIconProps): React.JSX.Element | null {
   switch (name) {
-    case 'startup':
+    case 'essential':
       return (
         <svg fill="none" height="33" viewBox="0 0 24 33" width="24" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -61,7 +66,7 @@ function PlanIcon({ name }: PlanIconProps): React.JSX.Element | null {
           />
         </svg>
       );
-    case 'standard':
+    case 'pro':
       return (
         <svg fill="none" height="33" viewBox="0 0 33 33" width="33" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -75,7 +80,7 @@ function PlanIcon({ name }: PlanIconProps): React.JSX.Element | null {
           />
         </svg>
       );
-    case 'business':
+    case 'elite':
       return (
         <svg fill="none" height="33" viewBox="0 0 43 33" width="43" xmlns="http://www.w3.org/2000/svg">
           <path

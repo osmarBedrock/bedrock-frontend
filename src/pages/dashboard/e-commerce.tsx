@@ -1,23 +1,17 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid2';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
 import { Helmet } from 'react-helmet-async';
 
 import type { Metadata } from '@/types/metadata';
 import { config } from '@/config';
-import { Conversions } from '@/components/dashboard/e-commerce/conversions';
-import { CostBreakdown } from '@/components/dashboard/e-commerce/cost-breakdown';
-import { SalesByCountry } from '@/components/dashboard/e-commerce/sales-by-country';
 import { Stats } from '@/components/dashboard/e-commerce/stats';
 import { TopProducts } from '@/components/dashboard/e-commerce/top-products';
 import { useAnalytics } from '@/hooks/use-analytics';
-import type { Metric, Range } from '@/types/analytics'; 
+import type { Range } from '@/types/analytics';
 import { useSearchParams } from 'react-router-dom';
-import { aggregateSeoData, customDataForSEO } from '@/utils/analytics';
 import { RangeButton } from '@/components/dashboard/analytics/range-button';
 import { Devices } from '@/components/dashboard/analytics/devices';
 
@@ -27,12 +21,12 @@ export function Page(): React.JSX.Element {
 
   const [params, setParams] = useSearchParams();
   const [range, setRange] = React.useState<Range>('week');
-  
+
   const { totalClicks,
     totalImpressions,
     averageCTR,
     averagePosition,
-    dataForChart, 
+    dataForChart,
     loaderDataForTable,
     loaderSessionData,
     sessionData,
@@ -40,10 +34,10 @@ export function Page(): React.JSX.Element {
     fetchAnalyticsData,
     fetchSearchConsoleData,
      refreshDataSearchConsole } = useAnalytics(setRange, params, range, 'impressions');
-  
-    React.useEffect( () => {        
-      fetchSearchConsoleData();
-      fetchAnalyticsData();
+
+    React.useEffect( () => {
+      void fetchSearchConsoleData();
+      void fetchAnalyticsData();
 
   }, [params.get("range")])
 
@@ -121,8 +115,8 @@ export function Page(): React.JSX.Element {
               }}
             >
               <Devices
-              loader={loaderSessionData}
-              data={sessionData}
+                loader={loaderSessionData}
+                data={sessionData}
               />
             </Grid>
             {/* <Grid

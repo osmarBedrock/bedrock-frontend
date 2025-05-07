@@ -1,66 +1,104 @@
 'use client';
 
-import axios from 'axios';
-import type { Range } from '@/types/analytics';
+import type { AnalyticsResponse, PageSpeedInsightResponse, SearchConsoleResponse } from '@/types/apis';
+import api from './api';
+import type { AxiosResponse } from 'axios';
+import type { AnalyticsRequest, PageSpeedInsightRequest, SearchConsoleRequest } from '@/types/analytics';
 
-const API_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8081/api';
+const API_URL: string = import.meta.env.VITE_BACKEND_URL as string || 'http://localhost:8081/api';
 
-export interface AnalyticsRequest {
-    range: Range;
-    googleToken?: string;
-    dimensions?: string[];
-    metric?: string[];
-    viewId?: string; 
-    isRealTime?: boolean;
-    keepEmptyRows?: boolean;
-}
+// Sistema de caché mejorado
+const cache = {
+  responses: new Map<string, { data: AnalyticsResponse | SearchConsoleResponse | PageSpeedInsightResponse; timestamp: number }>(), // Respuestas completadas
+  pending: new Map<string, Promise<AnalyticsResponse | SearchConsoleResponse | PageSpeedInsightResponse>>() // Peticiones en curso
+};
 
-export interface SearchConsoleRequest {
-    range: Range;
-    googleToken?: string;
-    siteUrl?: string;
-    rowLimit?: number;
-}
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutos de vida en caché
 
-export interface PageSpeedInsightRequest {
-    googleToken?: string;
-    siteUrl?: string;
-}
+// Generación de clave de caché consistente
+const getCacheKey = (endpoint: string, params: AnalyticsRequest | SearchConsoleRequest | PageSpeedInsightRequest): string => {
+  const keyStrategies = {
+    analytics: ['range'], // Solo usa 'range' como clave
+    searchConsole: ['range', 'siteUrl'],
+    pageSpeed: ['siteUrl']
+  };
+
+  const service = endpoint.includes('searchConsole') ? 'searchConsole'
+               : endpoint.includes('pageSpeed') ? 'pageSpeed'
+               : 'analytics';
+
+  return `${service}-${
+    keyStrategies[service]
+      .filter((field: string) => params[field as keyof typeof params])
+      .map((field: string) => `${field}:${JSON.stringify(params[field as keyof typeof params])}`)
+      .join('|')
+  }`;
+};
+
+// Núcleo del sistema de caché mejorado
+const executeRequest = async <T>(endpoint: string, params: AnalyticsRequest | SearchConsoleRequest | PageSpeedInsightRequest): Promise<T> => {
+  const key = getCacheKey(endpoint, params);
+  const url = `${API_URL}/${endpoint}`;
+
+  // 1. Verificar respuesta en caché (válida)
+  const cachedResponse = cache.responses.get(key);
+  if (cachedResponse && (Date.now() - cachedResponse.timestamp < CACHE_TTL)) {
+    return cachedResponse.data as T;
+  }
+
+  // 2. Verificar si ya hay una solicitud pendiente para esta clave
+  if (cache.pending.has(key)) {
+    return cache.pending.get(key) as Promise<T>;
+  }
+
+  try {
+
+    // 4. Crear y almacenar la promesa de la solicitud
+    const requestPromise: Promise<T> = api.post(url, params)
+      .then((response: AxiosResponse<T>) => {
+        // Almacenar en caché solo si la respuesta es exitosa
+        if (response.status >= 200 && response.status < 300) {
+          cache.responses.set(key, {
+            data: response.data as AnalyticsResponse | SearchConsoleResponse | PageSpeedInsightResponse,
+            timestamp: Date.now()
+          });
+        }
+        return response.data;
+      })
+      .finally(() => {
+        // Limpiar la solicitud pendiente cuando se complete (éxito o error)
+        cache.pending.delete(key);
+      });
+
+    // Registrar la solicitud pendiente
+    cache.pending.set(key, requestPromise as Promise<AnalyticsResponse | SearchConsoleResponse | PageSpeedInsightResponse>);
+
+    return await requestPromise;
+  } catch (error) {
+    // Asegurarse de limpiar la solicitud pendiente en caso de error
+    cache.pending.delete(key);
+    throw error;
+  }
+};
 
 export const AnalyticsService = {
+  handleAnalyticsRequest: (params: AnalyticsRequest) =>
+    executeRequest<AnalyticsResponse>('google/analytics', params),
 
-    handleAnalyticsRequest: async (params: AnalyticsRequest) => {
-        try {
-            params.googleToken = JSON.parse(localStorage.getItem('refresh-token') ?? '');
-            const response = await axios.post(`${API_URL}/google/analytics`, { ...params });
-            return response.data;
-        } catch (error: any) {
-            console.error('Error to get analytics:', error);
-            throw error?.response?.data;
-        }
-    },
+  handleSearchConsoleRequest: (params: SearchConsoleRequest) =>
+    executeRequest<SearchConsoleResponse>('google/searchConsole', params),
 
-    
-    handleSearchConsoleRequest: async (params: SearchConsoleRequest) => {
-        try {
-            params.googleToken = JSON.parse(localStorage.getItem('refresh-token') ?? '');
-            const response = await axios.post(`${API_URL}/google/searchConsole`, { ...params });
-            return response.data;
-        } catch (error: any) {
-            console.error('Error to get analytics:', error);
-            throw error?.response?.data;
-        }
-    },
+  handlePageSpeedInsightsRequest: (params: PageSpeedInsightRequest) =>
+    executeRequest<PageSpeedInsightResponse>('google/pageSpeed', params),
 
-    
-    handlePageSpeedInsightsRequest: async (params: PageSpeedInsightRequest) => {
-        try {
-            params.googleToken = JSON.parse(localStorage.getItem('refresh-token') ?? '');
-            const response = await axios.post(`${API_URL}/google/pageSpeed`, { ...params });
-            return response.data;
-        } catch (error: any) {
-            console.error('Error to get analytics:', error);
-            throw error?.response?.data;
-        }
-    },
-}
+  // Herramientas para desarrollo
+  clearCache: () => {
+    cache.responses.clear();
+    cache.pending.clear();
+  },
+
+  getCacheState: () => ({
+    cached: Array.from(cache.responses.keys()),
+    pending: Array.from(cache.pending.keys())
+  })
+};

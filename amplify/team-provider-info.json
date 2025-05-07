@@ -1,0 +1,15 @@
+{
+  "prod": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-vantagewp-prod-5aff6-authRole",
+      "UnauthRoleArn": "arn:aws:iam::081002643744:role/amplify-vantagewp-prod-5aff6-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::081002643744:role/amplify-vantagewp-prod-5aff6-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-vantagewp-prod-5aff6-deployment",
+      "UnauthRoleName": "amplify-vantagewp-prod-5aff6-unauthRole",
+      "StackName": "amplify-vantagewp-prod-5aff6",
+      "StackId": "arn:aws:cloudformation:us-east-1:081002643744:stack/amplify-vantagewp-prod-5aff6/2e53acd0-2620-11f0-9743-12d5cb047d53",
+      "AmplifyAppId": "d2fv7jbh9i2ckz"
+    }
+  }
+}

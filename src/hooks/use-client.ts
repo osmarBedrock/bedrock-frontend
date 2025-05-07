@@ -1,48 +1,41 @@
-import { AuthService } from "@/lib/auth/services/auth";
-import { useState } from "react";
+import { useState } from 'react';
 
-export interface UserData {
-    id?:            string;
-    name?:          string;
-    email?:         string;
-    avatarUrl?:     string;
-    clientId?:      string;
-    createdAt?:     Date;
-    updatedAt?:     Date;
-    scope?:         string;
-    password?:      string;
-    firstName?:     string;
-    lastName?:      string;
-    isLoginGoogle?: boolean;
-}
-
+import type { User } from '@/types/user';
+import { AuthService } from '@/lib/auth/services/auth';
 
 export const useClient = () => {
-    const [user, setUser] = useState<UserData>(JSON.parse(localStorage.getItem('custom-auth-user') || ''))
-    
-    const fetchUserData = async (email: string) => {
-        try {
-            const { data }  = await AuthService.handleDataUser({email})
-            setUser(data)
-        } catch (error) {
-            console.log('error', error)
-        }
-    }
+  const [user, setUser] = useState<User | null | undefined>(JSON.parse(localStorage.getItem('custom-auth-user') || 'null') as User | null);
 
-    const updateUser = async (user: UserData) => {
-        try {
-            const { data } = await AuthService.handleUpdateDataUser(user);
-            const oldUser = JSON.parse(localStorage.getItem('custom-auth-user') || '');
-            setUser({...oldUser,...data})
-            setUser(data)
-        } catch (error) {
-            console.log('error', error)
-        }
+  const fetchUserData = async (email: string) => {
+    const { user: userFinal, error } = await AuthService.handleDataUser({ email });
+    if (error) {
+      throw error;
     }
+    setUser(userFinal);
+  };
 
-    return {
-        fetchUserData,
-        updateUser,
-        user
+  const updateUser = async (userUpdated: User) => {
+    const { user: userFinal, website, error } = await AuthService.handleUpdateDataUser(userUpdated);
+    if (error) {
+      throw error;
     }
-}
+    const oldUser = JSON.parse(
+      localStorage.getItem("custom-auth-user") || "null"
+    ) as User | null;
+
+    if(website && userFinal) {
+      userFinal.website = website;
+    }
+    if(userFinal) {
+      setUser({ ...oldUser, ...userFinal});
+      localStorage.setItem('custom-auth-user', JSON.stringify(userFinal));
+    }
+  };
+
+  return {
+    fetchUserData,
+    updateUser,
+    user,
+    setUser
+  };
+};

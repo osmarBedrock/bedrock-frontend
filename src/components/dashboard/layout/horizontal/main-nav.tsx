@@ -22,7 +22,6 @@ import { useTranslation } from 'react-i18next';
 
 import type { NavItemConfig } from '@/types/nav';
 import type { NavColor } from '@/types/settings';
-import type { User } from '@/types/user';
 import { paths } from '@/paths';
 import { isNavItemActive } from '@/lib/is-nav-item-active';
 import { useDialog } from '@/hooks/use-dialog';
@@ -45,6 +44,7 @@ import { NotificationsPopover } from '../notifications-popover';
 import { UserPopover } from '../user-popover/user-popover';
 import { WorkspacesSwitch } from '../workspaces-switch';
 import { navColorStyles } from './styles';
+import { useUser } from '@/hooks/use-user';
 
 const logoColors = {
   dark: { blend_in: 'light', discrete: 'light', evident: 'light' },
@@ -221,16 +221,10 @@ function LanguageSwitch(): React.JSX.Element {
   );
 }
 
-const user = {
-  id: 'USR-000',
-  name: 'Sofia Rivers',
-  avatar: '/assets/avatar.png',
-  email: 'sofia@devias.io',
-} satisfies User;
 
 function UserButton(): React.JSX.Element {
   const popover = usePopover<HTMLButtonElement>();
-
+  const { user: userData } = useUser();
   return (
     <React.Fragment>
       <Box
@@ -254,10 +248,10 @@ function UserButton(): React.JSX.Element {
           }}
           variant="dot"
         >
-          <Avatar src={user.avatar} />
+          <Avatar src={userData?.enterprisePicture || '/assets/workspace-avatar-2.png'} />
         </Badge>
       </Box>
-      <UserPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} user={user} />
+      <UserPopover anchorEl={popover.anchorRef.current} onClose={popover.handleClose} open={popover.open} user={userData} />
     </React.Fragment>
   );
 }

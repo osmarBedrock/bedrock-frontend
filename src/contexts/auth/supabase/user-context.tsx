@@ -27,37 +27,110 @@ export function UserProvider({ children }: UserProviderProps): React.JSX.Element
   React.useEffect(() => {
     function handleInitialSession(session: Session | null): void {
       const user = session?.user;
+      if (!user) {
+        setState((prev) => ({
+          ...prev,
+          user: null,
+          error: null,
+          isLoading: false
+        }));
+        return;
+      }
 
+      const userData: User = {
+        id: Number(user.id),
+        email: user.email || '',
+        firstName: (user.user_metadata?.full_name as string) || '',
+        lastName: (user.user_metadata?.full_name as string) || '',
+        avatar: (user.user_metadata?.avatar_url as string) || '',
+        passwordHash: '',
+        googleId: null,
+        emailVerified: user.email_confirmed_at !== null,
+        planType: '',
+        stripeCustomerId: null,
+        currentPeriodEnd: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isProfileComplete: false,
+        enterpriseName: '',
+        enterprisePicture: null,
+        verificationData: {
+          dnsRecord: '',
+          verificationUrl: ''
+        },
+        websites: [],
+        website: {
+          id: 0,
+          domain: '',
+          propertyId: '',
+          verificationCode: '',
+          isVerified: false,
+          userId: 0,
+          googleAccessToken: '',
+          googleRefreshToken: '',
+          semrushApiKey: null,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      };
       setState((prev) => ({
         ...prev,
-        user: user
-          ? ({
-              id: user.id ?? undefined,
-              email: user.email ?? undefined,
-              name: (user.user_metadata?.full_name as string) ?? undefined,
-              avatar: (user.user_metadata?.avatar_url as string) ?? undefined,
-            } satisfies User)
-          : null,
-        error: null,
-        isLoading: false,
+        ...userData
       }));
     }
 
     function handleSignedIn(session: Session | null): void {
       const user = session?.user;
+      if (!user) {
+        setState((prev) => ({
+          ...prev,
+          user: null,
+          error: null,
+          isLoading: false
+        }));
+        return;
+      }
+
+      const userData: User = {
+        id: Number(user.id),
+        email: user.email || '',
+        firstName: (user.user_metadata?.full_name as string) || '',
+        lastName: (user.user_metadata?.full_name as string) || '',
+        avatar: (user.user_metadata?.avatar_url as string) || '',
+        passwordHash: '',
+        googleId: null,
+        emailVerified: user.email_confirmed_at !== null,
+        planType: '',
+        stripeCustomerId: null,
+        currentPeriodEnd: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        isProfileComplete: false,
+        enterpriseName: '',
+        enterprisePicture: null,
+        verificationData: {
+          dnsRecord: '',
+          verificationUrl: ''
+        },
+        websites: [],
+        website: {
+          id: 0,
+          domain: '',
+          propertyId: '',
+          verificationCode: '',
+          isVerified: false,
+          userId: 0,
+          googleAccessToken: '',
+          googleRefreshToken: '',
+          semrushApiKey: null,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      };
 
       setState((prev) => ({
         ...prev,
-        user: user
-          ? ({
-              id: user.id ?? undefined,
-              email: user.email ?? undefined,
-              name: (user.user_metadata?.full_name as string) ?? undefined,
-              avatar: (user.user_metadata?.avatar_url as string) ?? undefined,
-            } satisfies User)
-          : null,
-        error: null,
-        isLoading: false,
+        ...userData
       }));
     }
 

@@ -1,31 +1,14 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid2';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { ArrowRight as ArrowRightIcon } from '@phosphor-icons/react/dist/ssr/ArrowRight';
-import { Briefcase as BriefcaseIcon } from '@phosphor-icons/react/dist/ssr/Briefcase';
-import { FileCode as FileCodeIcon } from '@phosphor-icons/react/dist/ssr/FileCode';
-import { Info as InfoIcon } from '@phosphor-icons/react/dist/ssr/Info';
-import { ListChecks as ListChecksIcon } from '@phosphor-icons/react/dist/ssr/ListChecks';
-import { Plus as PlusIcon } from '@phosphor-icons/react/dist/ssr/Plus';
-import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
-import { Warning as WarningIcon } from '@phosphor-icons/react/dist/ssr/Warning';
 import { Helmet } from 'react-helmet-async';
 
 import type { Metadata } from '@/types/metadata';
 import { config } from '@/config';
-import { dayjs } from '@/lib/dayjs';
-import { AppChat } from '@/components/dashboard/overview/app-chat';
-import { AppLimits } from '@/components/dashboard/overview/app-limits';
-import { AppUsage } from '@/components/dashboard/overview/app-usage';
-import { Events } from '@/components/dashboard/overview/events';
-import { HelperWidget } from '@/components/dashboard/overview/helper-widget';
-import { Subscriptions } from '@/components/dashboard/overview/subscriptions';
-import { Summary } from '@/components/dashboard/overview/summary';
 import { CountrySessionsVsBounce } from '@/components/dashboard/analytics/country-sessions-vs-bounce-rate';
-import type { Range, Metric } from '@/types/analytics';
+import type { Range } from '@/types/analytics';
 import { useSearchParams } from 'react-router-dom';
 import { useAnalytics } from '@/hooks/use-analytics';
 import { Devices } from '@/components/dashboard/analytics/devices';
@@ -36,9 +19,9 @@ const metadata = { title: `Overview | Dashboard | ${config.site.name}` } satisfi
 
 export function Page(): React.JSX.Element {
   const [range, setRange] = React.useState<Range>('week');
-  const [params, setParams] = useSearchParams();
+  const [params, _] = useSearchParams();
 
-    const { data, metric, 
+    const { data, metric,
     sessionData,
     fetchAnalyticsData,
     fetchSearchConsoleData,
@@ -53,11 +36,11 @@ export function Page(): React.JSX.Element {
      } = useAnalytics(setRange, params, range,"activeUsers");
 
       React.useEffect( () => {
-        fetchPageSpeedData();
-        fetchAnalyticsData();
-        fetchSearchConsoleData();
+        void fetchPageSpeedData();
+        void fetchAnalyticsData();
+        void fetchSearchConsoleData();
       }, [])
-      console.log('performanceMetrics', performanceMetrics)
+
   return (
     <React.Fragment>
       <Helmet>

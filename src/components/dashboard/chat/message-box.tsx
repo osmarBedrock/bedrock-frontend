@@ -7,24 +7,19 @@ import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import type { User } from '@/types/user';
 import { dayjs } from '@/lib/dayjs';
 
 import type { Message } from './types';
+import { useUser } from '@/hooks/use-user';
 
-const user = {
-  id: 'USR-000',
-  name: 'Sofia Rivers',
-  avatar: '/assets/avatar.png',
-  email: 'sofia@devias.io',
-} satisfies User;
 
 export interface MessageBoxProps {
   message: Message;
 }
 
 export function MessageBox({ message }: MessageBoxProps): React.JSX.Element {
-  const position = message.author.id === user.id ? 'right' : 'left';
+  const { user } = useUser();
+  const position = message.author.id === user?.id ? 'right' : 'left';
 
   return (
     <Box sx={{ alignItems: position === 'right' ? 'flex-end' : 'flex-start', flex: '0 0 auto', display: 'flex' }}>

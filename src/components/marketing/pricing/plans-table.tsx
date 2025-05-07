@@ -11,6 +11,24 @@ import Typography from '@mui/material/Typography';
 import { Plan } from './plan';
 
 export function PlansTable(): React.JSX.Element {
+  const [isAnnual, setIsAnnual] = React.useState(false);
+
+  const handleSwitchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setIsAnnual(event.target.checked);
+  };
+
+  const monthlyPrices = {
+    essentials: 29,
+    pro: 89,
+    elite: 149,
+  };
+
+  const annualPrices = {
+    essentials: monthlyPrices.essentials * 12 * 0.85,
+    pro: monthlyPrices.pro * 12 * 0.85,
+    elite: monthlyPrices.elite * 12 * 0.85,
+  };
+
   return (
     <Box sx={{ bgcolor: 'var(--mui-palette-background-level1)', py: { xs: '60px', sm: '120px' } }}>
       <Container maxWidth="lg">
@@ -23,74 +41,82 @@ export function PlansTable(): React.JSX.Element {
               Join 10,000+ developers &amp; designers using Devias to power modern web projects.
             </Typography>
             <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-              <Switch defaultChecked />
-              <Typography variant="body1">Billed annually</Typography>
-              <Chip color="success" label="25% OFF" size="small" />
+              <Typography variant="body2">Monthly</Typography>
+              <Switch checked={isAnnual} onChange={handleSwitchChange} />
+              <Typography variant="body2">Annually</Typography>
+              {isAnnual && <Chip color="success" label="15% OFF" size="small" />}
             </Stack>
           </Stack>
+
           <div>
             <Grid container spacing={3}>
-              <Grid
-                size={{
-                  md: 4,
-                  xs: 12,
-                }}
-              >
+              <Grid size={{ md: 4, xs: 12 }}>
                 <Plan
                   action={<Button variant="outlined">Select</Button>}
                   currency="USD"
-                  description="To familiarize yourself with our tools."
-                  features={['Create contracts', 'Chat support', 'Email alerts']}
-                  id="startup"
-                  name="Startup"
-                  price={0}
+                  description="For Small Business Owners & Beginners."
+                  features={[
+                    'Simple Analytics Dashboard (Traffic, Leads, Conversions)',
+                    'On-Page SEO Audit & Basic Keyword Tracking',
+                    'Website speed (one time, con refresh)',
+                    'AI Chatbot (Limited Conversations) - per day limit responses',
+                    'Lead Capture & Basic CRM (Up to 500 Contacts)',
+                    'Google Search Console & GA4 Integration',
+                    'No Plugins Needed – Easy Setup',
+                    'Email Support',
+                  ]}
+                  id="Essentials-plan"
+                  name="Essentials Plan"
+                  price={isAnnual ? annualPrices.essentials : monthlyPrices.essentials}
                 />
               </Grid>
-              <Grid
-                size={{
-                  md: 4,
-                  xs: 12,
-                }}
-              >
+
+              <Grid size={{ md: 4, xs: 12 }}>
                 <Plan
-                  action={<Button variant="contained">Start free trial</Button>}
+                  action={<Button variant="contained">Select</Button>}
                   currency="USD"
-                  description="Best for small teams with up to 10 members."
-                  features={['All previous', 'Highlights reporting', 'Data history', 'Unlimited users']}
-                  id="standard"
-                  name="Standard"
+                  description="For Growing Businesses & eCommerce Stores"
+                  features={[
+                    'Everything in Essentials +',
+                    'Full SEO Toolkit (Keyword Tracking, Competitor Analysis, Backlink Monitoring)',
+                    'CRM with Lead Nurturing (Up to 5,000 Contacts)',
+                    'AI Chatbot (Limited Conversations)',
+                    'Social Media & Google My Business Integration',
+                    'Automated Lead Follow-Ups',
+                    'Chat Support',
+                  ]}
+                  id="Pro-plan"
+                  name="Pro Plan"
                   popular
-                  price={14.99}
+                  price={isAnnual ? annualPrices.pro : monthlyPrices.pro}
                 />
               </Grid>
-              <Grid
-                size={{
-                  md: 4,
-                  xs: 12,
-                }}
-              >
+
+              <Grid size={{ md: 4, xs: 12 }}>
                 <Plan
                   action={
                     <Button color="secondary" variant="contained">
-                      Contact us
+                      Select
                     </Button>
                   }
                   currency="USD"
-                  description="For larger teams managing multiple projects."
+                  description="For Agencies & Power Users."
                   features={[
-                    'All previous',
-                    'Unlimited contacts',
-                    'Analytics platform',
-                    'Public API access',
-                    'Send and sign unlimited contracts',
+                    'Everything in Pro +',
+                    'Multi-Site Management for WordPress (Track Multiple Websites)',
+                    'AI-Powered Predictive Analytics & Lead Scoring',
+                    'CRM with Workflow Automation (Up to 10,000 Contacts)',
+                    'AI Chatbot (Unlimited Conversations)',
+                    'Dedicated Account Manager / Email / Chat Support',
                   ]}
-                  id="business"
-                  name="Business"
-                  price={29.99}
+                  id="elite-plan"
+                  name="Elite Plan"
+                  price={isAnnual ? annualPrices.elite : monthlyPrices.elite}
                 />
               </Grid>
             </Grid>
           </div>
+
           <div>
             <Typography color="text.secondary" component="p" sx={{ textAlign: 'center' }} variant="caption">
               30% of our income goes into Whale Charity

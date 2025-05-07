@@ -1,3 +1,6 @@
+import { SxProps, Theme } from '@mui/material/styles';
+
+
 export interface NavItemConfig {
   key: string;
   title?: string;
@@ -12,4 +15,7 @@ export interface NavItemConfig {
   // If you need to match multiple paths,
   // can extend it to accept multiple matchers.
   matcher?: { type: 'startsWith' | 'equals'; href: string };
+  buttonVariant?: 'text' | 'outlined' | 'contained'; // Tipos de botón de MUI
+  buttonColor?: 'primary' | 'secondary' | 'error' | 'inherit'; // Colores de MUI
+  sx?: SxProps<Theme>; // Estilos personalizados
 }
