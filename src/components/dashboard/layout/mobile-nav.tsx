@@ -20,6 +20,8 @@ import { icons } from './nav-icons';
 import { WorkspacesSwitch } from './workspaces-switch';
 import Button from '@mui/material/Button';
 import { useClient } from '@/hooks/use-client';
+import { toast } from '@/components/core/toaster';
+import { authClient } from '@/lib/auth/custom/client';
 
 export interface MobileNavProps {
   onClose?: () => void;
@@ -36,6 +38,22 @@ const provider = {
 export function MobileNav({ items = [], open, onClose }: MobileNavProps): React.JSX.Element {
   const pathname = usePathname();
   const { user } = useClient();
+
+  const handleGoogleAuth = async (): Promise<void> => {
+    try {
+      const { url, error } = await authClient.signInWithOAuth({ provider: 'google' });
+
+      if (error) {
+        toast.error(String(error));
+        return;
+      }
+
+      window.location.href = url ?? '';
+
+    } catch (error) {
+      toast.error(String(error));
+    }
+  };
 
   return (
     <Drawer
@@ -88,9 +106,7 @@ export function MobileNav({ items = [], open, onClose }: MobileNavProps): React.
                   color="secondary"
                   endIcon={<Box alt="" component="img" height={24} src={provider.logo} width={24} />}
                   key={provider.id}
-                  // onClick={(): void => {
-                  //   console.log('click');
-                  // }}
+                  onClick={handleGoogleAuth}
                   variant="outlined"
                 >
                   Grant access to {provider.name}
