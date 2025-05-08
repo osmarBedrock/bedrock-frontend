@@ -16,10 +16,10 @@ import { isNavItemActive } from '@/lib/is-nav-item-active';
 import { usePathname } from '@/hooks/use-pathname';
 import { RouterLink } from '@/components/core/link';
 import { Logo } from '@/components/core/logo';
-import { useUser } from '@/hooks/use-user';
 import { icons } from './nav-icons';
 import { WorkspacesSwitch } from './workspaces-switch';
 import Button from '@mui/material/Button';
+import { useClient } from '@/hooks/use-client';
 
 export interface MobileNavProps {
   onClose?: () => void;
@@ -35,7 +35,7 @@ const provider = {
 
 export function MobileNav({ items = [], open, onClose }: MobileNavProps): React.JSX.Element {
   const pathname = usePathname();
-  const { user } = useUser();
+  const { user } = useClient();
 
   return (
     <Drawer
@@ -84,13 +84,13 @@ export function MobileNav({ items = [], open, onClose }: MobileNavProps): React.
       </Stack>
       <Box component="nav" sx={{ flex: '1 1 auto', p: 2 }}>
 
-      {user?.website?.googleAccessToken && <Button
+      {(!user?.website?.googleAccessToken && !user?.websites?.[0]?.googleAccessToken) && <Button
                   color="secondary"
                   endIcon={<Box alt="" component="img" height={24} src={provider.logo} width={24} />}
                   key={provider.id}
-                  onClick={(): void => {
-                    console.log('click');
-                  }}
+                  // onClick={(): void => {
+                  //   console.log('click');
+                  // }}
                   variant="outlined"
                 >
                   Grant access to {provider.name}
@@ -190,9 +190,10 @@ function NavItem({
   pathname,
   title,
 }: NavItemProps): React.JSX.Element {
-  const { user } = useUser();
+  const { user } = useClient();
   const [open, setOpen] = React.useState<boolean>(forceOpen);
-  const [isDisabled, setIsDisabled] = React.useState<boolean>(href && !user?.website?.googleAccessToken ? true : false);
+  const haveGoogleAccess: boolean = user?.website?.googleAccessToken !== undefined && user?.websites?.[0]?.googleAccessToken !== undefined;
+  const [isDisabled, _] = React.useState<boolean>(href !== undefined && !haveGoogleAccess);
   const active = isNavItemActive({ disabled, external, href, matcher, pathname });
   const Icon = icon ? icons[icon] : null;
   const ExpandIcon = open ? CaretDownIcon : CaretRightIcon;
