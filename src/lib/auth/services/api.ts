@@ -2,11 +2,14 @@
 import type { User } from '@/types/user';
 import axios, { type AxiosError } from 'axios';
 
-const API_URL: string = import.meta.env.VITE_API_URL as string || 'http://localhost:3000/api';
+const API_URL: string = import.meta.env.VITE_BACKEND_URL as string || 'http://localhost:8081';
 
+if (!import.meta.env.VITE_BACKEND_URL) {
+  throw new Error("La variable VITE_BACKEND_URL no está definida");
+}
 // 1. Crear instancia de Axios
 const api = axios.create({
-  baseURL: API_URL,
+  baseURL: `${API_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
