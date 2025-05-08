@@ -23,7 +23,7 @@ import { icons } from '../nav-icons';
 import { WorkspacesSwitch } from '../workspaces-switch';
 import { navColorStyles } from './styles';
 import { authClient } from '@/lib/auth/custom/client';
-import { useUser } from '@/hooks/use-user';
+import { useClient } from '@/hooks/use-client';
 
 const logoColors = {
   dark: { blend_in: 'light', discrete: 'light', evident: 'light' },
@@ -41,7 +41,7 @@ export interface SideNavProps {
 
 export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.JSX.Element {
   const pathname = usePathname();
-  const { user } = useUser();
+  const { user } = useClient();
 
   const { colorScheme = 'light' } = useColorScheme();
 
@@ -101,7 +101,7 @@ export function SideNav({ color = 'evident', items = [] }: SideNavProps): React.
       >
         <Stack component="li" key="google-access" spacing={1.5}>
         {
-          user?.website?.googleAccessToken &&
+          (!user?.website?.googleAccessToken && !user?.websites?.[0]?.googleAccessToken) &&
             <Button
             color="secondary"
             endIcon={<Box alt="" component="img" height={24} src={provider.logo} width={24}/>}
@@ -239,7 +239,7 @@ function NavItem({
   const ExpandIcon = open ? CaretDownIcon : CaretRightIcon;
   const isBranch = children && !href;
   const showChildren = Boolean(children && open);
-  const { user } = useUser();
+  const { user } = useClient();
   const isDisabled = href && !user?.website?.googleAccessToken;
 
   if (buttonVariant) {

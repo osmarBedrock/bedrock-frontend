@@ -55,7 +55,7 @@ export function AccountDetails({user, updateFunction}: AccountProps): React.JSX.
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
     enterpriseName: user?.enterpriseName || '',
-    domain: user?.websites?.[0]?.domain || '',
+    domain: user?.websites?.[0]?.domain || user?.website?.domain || '',
     id: user?.id
   };
 
@@ -200,13 +200,13 @@ export function AccountDetails({user, updateFunction}: AccountProps): React.JSX.
           </Stack>
             <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
               {
-                !user?.websites?.[0]?.domain &&
+                (!user?.websites?.[0]?.domain && !user?.website?.domain) &&
                 <Typography gutterBottom variant="h5" component="div" sx={{ color: 'var(--mui-palette-error-main)' }}>
                   It is necessary to capture the domain of your company to access the dashboard.
                 </Typography>
               }
               {
-                !user?.websites?.[0]?.googleAccessToken &&
+                (!user?.websites?.[0]?.googleAccessToken && !user?.website?.googleAccessToken) &&
                 <Typography gutterBottom variant="h5" component="div" sx={{ color: 'var(--mui-palette-error-main)' }}>
                   It is necessary to grant access to your Google account to access the dashboard.
                 </Typography>
