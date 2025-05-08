@@ -5,7 +5,11 @@ import api from './api';
 import type { AxiosResponse } from 'axios';
 import type { AnalyticsRequest, PageSpeedInsightRequest, SearchConsoleRequest } from '@/types/analytics';
 
-const API_URL: string = import.meta.env.VITE_BACKEND_URL as string || 'http://localhost:8081/api';
+const API_URL: string = import.meta.env.VITE_BACKEND_URL as string || 'http://localhost:8081';
+
+if (!import.meta.env.VITE_BACKEND_URL) {
+  throw new Error("La variable VITE_BACKEND_URL no está definida");
+}
 
 // Sistema de caché mejorado
 const cache = {
@@ -38,7 +42,7 @@ const getCacheKey = (endpoint: string, params: AnalyticsRequest | SearchConsoleR
 // Núcleo del sistema de caché mejorado
 const executeRequest = async <T>(endpoint: string, params: AnalyticsRequest | SearchConsoleRequest | PageSpeedInsightRequest): Promise<T> => {
   const key = getCacheKey(endpoint, params);
-  const url = `${API_URL}/${endpoint}`;
+  const url = `${API_URL}/api/${endpoint}`;
 
   // 1. Verificar respuesta en caché (válida)
   const cachedResponse = cache.responses.get(key);
