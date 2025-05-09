@@ -57,7 +57,13 @@ const executeRequest = async <T>(endpoint: string, params: AnalyticsRequest | Se
   try {
 
     // 4. Crear y almacenar la promesa de la solicitud
-    const requestPromise: Promise<T> = axios.post(url, params)
+    const requestPromise: Promise<T> = axios.post(url, params, {
+      withCredentials: true,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
       .then((response: AxiosResponse<T>) => {
         // Almacenar en caché solo si la respuesta es exitosa
         if (response.status >= 200 && response.status < 300) {
