@@ -24,7 +24,7 @@ api.interceptors.request.use(
         const userData: User = JSON.parse(localStorage.getItem('custom-auth-user') || '') as User;
         if (userData) {
           if (userData.id && config.headers) {
-            config.headers['userId'] = userData.id;
+            config.headers['x-user-id'] = userData.id;
           }
         }
       } catch (error) {
