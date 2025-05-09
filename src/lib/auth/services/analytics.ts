@@ -1,8 +1,9 @@
 'use client';
 
 import type { AnalyticsResponse, PageSpeedInsightResponse, SearchConsoleResponse } from '@/types/apis';
-import axios, { type AxiosResponse } from 'axios';
+import { type AxiosResponse } from 'axios';
 import type { AnalyticsRequest, PageSpeedInsightRequest, SearchConsoleRequest } from '@/types/analytics';
+import api from './api';
 
 const API_URL: string = import.meta.env.VITE_BACKEND_URL as string || 'http://localhost:8081';
 
@@ -57,13 +58,7 @@ const executeRequest = async <T>(endpoint: string, params: AnalyticsRequest | Se
   try {
 
     // 4. Crear y almacenar la promesa de la solicitud
-    const requestPromise: Promise<T> = axios.post(url, params, {
-      withCredentials: true,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    })
+    const requestPromise: Promise<T> = api.post(url, params)
       .then((response: AxiosResponse<T>) => {
         // Almacenar en caché solo si la respuesta es exitosa
         if (response.status >= 200 && response.status < 300) {
