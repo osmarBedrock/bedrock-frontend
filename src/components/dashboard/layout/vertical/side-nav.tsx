@@ -240,7 +240,8 @@ function NavItem({
   const isBranch = children && !href;
   const showChildren = Boolean(children && open);
   const { user } = useClient();
-  const isDisabled = href && user?.website?.googleAccessToken;
+  const websites = user?.websites?.length ? user?.websites[0] : {googleAccessToken: false};
+  const isDisabled = href && (user?.website?.googleAccessToken || websites?.googleAccessToken );
 
   if (buttonVariant) {
     return (
